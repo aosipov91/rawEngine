@@ -1,0 +1,5 @@
+winBuild/
+buld/
+*.swp
+*.txt
+!CMakeLists.txt
