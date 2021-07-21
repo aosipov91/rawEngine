@@ -22,7 +22,7 @@ public:
 	void add(vec3 pos, vec3 velocity, float size, float time, float life, float mass, vec3 color);
 	void update(float deltaTime);
 	void render();
-	void addParticle();
+	void handleSmoke(float deltaTime);
 
 	Particle* mParticles;
 	Particle* mAliveParticles[MAX_PARTICLES];

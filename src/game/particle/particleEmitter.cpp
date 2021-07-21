@@ -1,4 +1,5 @@
 #include "particleEmitter.h"
+#include <stdio.h>
 
 
 namespace game {
@@ -8,7 +9,7 @@ ParticleEmitter::ParticleEmitter()
 	: mParticles(nullptr)
 	, count(0)
 	, mTime(0.0f)
-	, mTimePerParticle(0.0f)
+	, mTimePerParticle(0.0025f)
 {
 
 }
@@ -39,19 +40,20 @@ void ParticleEmitter::add(vec3 pos, vec3 velocity, float size, float time, float
 	particle->initialPos = pos;
 	particle->initialVelocity = velocity;
 	particle->initialSize = size;
-	particle->initialTime = time;
+	particle->initialTime = mTime;
 	particle->lifeTime = life;
 	particle->mass = mass;
 	particle->initialColor = color;
+	particle->alive = true;
 }
 
 void ParticleEmitter::update(float deltaTime)
 {
+
 	mTime += deltaTime;
 
 	Particle *particle = mParticles;
 
-	int index = 0;
 	// Loop through all particles
 	while(particle != nullptr)
 	{
@@ -61,19 +63,21 @@ void ParticleEmitter::update(float deltaTime)
 		// set flag to remove from list
 		bool removeFromList = false;
 
-		if ( (mTime - particle->initialTime) > particle->lifeTime)
+		if (particle->lifeTime)
 		{
-			removeFromList = true;
-			// add to alive buffer
-			mDeadParticles[index] = particle;
-		}
-		else
-		{
-			mAliveParticles[index] = particle;
+			if( (mTime - particle->initialTime > particle->lifeTime))
+			{
+				removeFromList = true;	
+			}	
+			else
+			{
+				particle->lifeTime = 0.0;	
+			}
 		}
 
+
 		// remove particle from list if flagged
-		if (removeFromList)
+		if (removeFromList == true)
 		{
 			if (particle->prev)
 			{
@@ -94,30 +98,27 @@ void ParticleEmitter::update(float deltaTime)
 			delete particle;
 		}
 
-		if (mTimePerParticle > 0.0f)
-		{
-			static float timeAccum = 0.0f;	
-			timeAccum += deltaTime;
-			while(timeAccum >= mTimePerParticle)
-			{
-				addParticle();	
-				timeAccum -= mTimePerParticle;
-			}
-		}
 
 		count++;
-		index++;
 
 		// go to next particle
 		particle = nextParticle;
 	}
 }
 
-void ParticleEmitter::addParticle()
+void ParticleEmitter::handleSmoke(float deltaTime)
 {
-	
-	add(vec3(0.0f, 4.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f),
-						10.0f, 0.5f, 4.0f, 2.0f, vec3(1.0f, 0.0f, 0.0f));
+	if (mTimePerParticle > 0.0f)
+	{
+		static float timeAccum = 0.0f;
+		timeAccum += deltaTime;
+		while (timeAccum >= mTimePerParticle)
+		{
+			add(vec3(0.0f, 4.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f),
+						mTime, 2.5f, .5f, 2.0f, vec3(1.0f, 0.0f, 0.0f));
+			timeAccum -= mTimePerParticle;
+		}
+	}
 }
 
 void ParticleEmitter::render()

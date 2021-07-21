@@ -66,20 +66,8 @@ public:
 
 				mesh = create_mesh(vertices, 4, indices,6);
 				particleEmitter = new game::particle::ParticleEmitter();
-				particleEmitter->add(vec3(0.0f, 4.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f),
-						10.0f, 0.5f, 4.0f, 2.0f, vec3(1.0f, 0.0f, 0.0f));
-				particleEmitter->add(vec3(0.0f, 4.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f),
-						10.0f, 0.5f, 4.0f, 2.0f, vec3(1.0f, 0.0f, 0.0f));
-				particleEmitter->add(vec3(0.0f, 4.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f),
-						10.0f, 0.5f, 4.0f, 2.0f, vec3(1.0f, 0.0f, 0.0f));
-				particleEmitter->add(vec3(0.0f, 4.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f),
-						10.0f, 0.5f, 4.0f, 2.0f, vec3(1.0f, 0.0f, 0.0f));
-				particleEmitter->add(vec3(0.0f, 4.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f),
-						10.0f, 0.5f, 4.0f, 2.0f, vec3(1.0f, 0.0f, 0.0f));
-				particleEmitter->add(vec3(0.0f, 4.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f),
-						10.0f, 0.5f, 4.0f, 2.0f, vec3(1.0f, 0.0f, 0.0f));
-				particleEmitter->update(deltaTime);
-				printf("%d\n", particleEmitter->count);
+				particleEmitter->create();
+
         return true;
     }
     void render()
@@ -100,6 +88,9 @@ public:
             deltaTime = fmin(d, 1.0f / 60.0f);
             d -= deltaTime;
         }
+				particleEmitter->handleSmoke(deltaTime);
+				particleEmitter->update(deltaTime);
+				printf("%d\n", particleEmitter->count);
 
     }
     

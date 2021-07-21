@@ -19,6 +19,7 @@ public:
 		, lifeTime(0.0f)
 		, mass(0.0f)
 		, initialColor()
+		, alive(false)
 	{
 	}
 
@@ -36,6 +37,7 @@ public:
 	float lifeTime;
 	float mass;
 	vec3 initialColor;
+	bool alive;
 
 	Particle* prev;
 	Particle* next;
