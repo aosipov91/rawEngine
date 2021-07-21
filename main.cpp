@@ -10,10 +10,7 @@
 #include "src/renderer/texture.h"
 #include "src/renderer/uniform.h"
 
-
-#include "src/util/ddsLoader.h"
-
-#include "src/game/particle/particleSystem.h"
+#include "src/game/particle/particleEmitter.h"
 
 #include "src/util/ddsLoader.h"
 
@@ -27,13 +24,13 @@ class PSystem : public core::Application
 {
 private:
     float deltaTime;
-
-		renderer::Shader* shaderProgram;
+	renderer::Shader* shaderProgram;
     Mesh* mesh;
     mat4 proj;
     mat4 view;
     mat4 model;
 		renderer::Texture *tex;
+		game::particle::ParticleEmitter* particleEmitter;
 public:
     PSystem()
         : core::Application()
@@ -44,25 +41,45 @@ public:
         , proj()
         , model()
         , shaderProgram(nullptr)
+				, particleEmitter(nullptr)
     {
 
 
     }
     bool init() {
 
-			shaderProgram = new renderer::Shader("../data/shaders/trig_vertex.glsl", "../data/shaders/trig_fragment.glsl");
-			shaderProgram->Bind();
-			tex = new renderer::Texture("../data/textures/torch.dds");
-			renderer::Uniform<int>::Set(shaderProgram->GetUniform("Sampler0"), 0);
-			float vertices[] = {
-				-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,	
-				-1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-				1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-				1.0f, -1.0f, 0.0f, 1.0f, 0.0f
-			};
-			unsigned int indices[] = {0, 1, 2, 0, 2, 3};
+				view = lookAt(vec3(0.0f, 0.0f, 4.0f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
+				proj = perspective(90.0f, (float)WIDTH/(float)HEIGHT, 0.1f, 100.0f);
+				shaderProgram = new renderer::Shader("../data/shaders/trig_vertex.glsl", "../data/shaders/trig_fragment.glsl");
+				shaderProgram->Bind();
+				tex = new renderer::Texture("../data/textures/torch.dds");
+				renderer::Uniform<int>::Set(shaderProgram->GetUniform("Sampler0"), 0);
+				renderer::Uniform<mat4>::Set(shaderProgram->GetUniform("proj"), proj);
+				renderer::Uniform<mat4>::Set(shaderProgram->GetUniform("view"), view);
+				float vertices[] = {
+					-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,	
+					-1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+					1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+					1.0f, -1.0f, 0.0f, 1.0f, 0.0f
+				};
+				unsigned int indices[] = {0, 1, 2, 0, 2, 3};
 
 				mesh = create_mesh(vertices, 4, indices,6);
+				particleEmitter = new game::particle::ParticleEmitter();
+				particleEmitter->add(vec3(0.0f, 4.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f),
+						10.0f, 0.5f, 4.0f, 2.0f, vec3(1.0f, 0.0f, 0.0f));
+				particleEmitter->add(vec3(0.0f, 4.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f),
+						10.0f, 0.5f, 4.0f, 2.0f, vec3(1.0f, 0.0f, 0.0f));
+				particleEmitter->add(vec3(0.0f, 4.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f),
+						10.0f, 0.5f, 4.0f, 2.0f, vec3(1.0f, 0.0f, 0.0f));
+				particleEmitter->add(vec3(0.0f, 4.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f),
+						10.0f, 0.5f, 4.0f, 2.0f, vec3(1.0f, 0.0f, 0.0f));
+				particleEmitter->add(vec3(0.0f, 4.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f),
+						10.0f, 0.5f, 4.0f, 2.0f, vec3(1.0f, 0.0f, 0.0f));
+				particleEmitter->add(vec3(0.0f, 4.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f),
+						10.0f, 0.5f, 4.0f, 2.0f, vec3(1.0f, 0.0f, 0.0f));
+				particleEmitter->update(deltaTime);
+				printf("%d\n", particleEmitter->count);
         return true;
     }
     void render()
@@ -74,7 +91,6 @@ public:
 				glBindTexture(GL_TEXTURE_2D, tex->GetHandle());
 				draw_mesh(mesh);
         //glEnable(GL_DEPTH_TEST);
-
     }
 
     void idle()
@@ -89,9 +105,10 @@ public:
     
     ~PSystem()
     {
-			destroy_mesh(mesh);
-			delete tex;
-			delete shaderProgram;
+		destroy_mesh(mesh);
+		delete tex;
+		delete shaderProgram;
+		delete particleEmitter;
     }
 };
 

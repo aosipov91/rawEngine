@@ -50,6 +50,8 @@ ${PLATFORM_SOURCES}
 	"src/game/particle/particle.h"
 	"src/game/particle/particleSystem.h"
 	"src/game/particle/particleSystem.cpp"
+	"src/game/particle/particleEmitter.h"
+	"src/game/particle/particleEmitter.cpp"
 	"src/game/particle/fireRing.h"
 	"src/game/particle/fireRing.cpp"
 
