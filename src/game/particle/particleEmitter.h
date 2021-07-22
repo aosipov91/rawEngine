@@ -3,33 +3,52 @@
 
 
 #include "src/math/vec3.h"
+#include "src/math/mat4.h"
 #include "particle.h"
+#include "src/renderer/opengl/openGLExtensions.h"
+#include "src/renderer/texture.h"
+#include "src/renderer/shader.h"
+#include "src/renderer/uniform.h"
 
 namespace game {
 namespace particle {
 
-class ParticleEmitter final
+class ParticleEmitter
 {
 public:
 	ParticleEmitter();
-	~ParticleEmitter();
+	virtual ~ParticleEmitter();
 
 	enum {
-		MAX_PARTICLES = 10	
+		MAX_PARTICLES = 1500
 	};
 
 	void create();
-	void add(vec3 pos, vec3 velocity, float size, float time, float life, float mass, vec3 color);
+        void insert();
 	void update(float deltaTime);
 	void render();
-	void handleSmoke(float deltaTime);
+        void createBuffer();
+        void setProj(mat4& proj);
+        void setView(mat4& view);
 
-	Particle* mParticles;
-	Particle* mAliveParticles[MAX_PARTICLES];
-	Particle* mDeadParticles[MAX_PARTICLES];
+        virtual void initParticle(Particle* out) = 0; 
+
+	Particle mParticles[MAX_PARTICLES];
+	Particle mTestParticles[MAX_PARTICLES];
+	Particle* mAliveParticles;
+	Particle* mDeadParticles;
+
+        bool mInitParticles;
+
 	unsigned int count;
 	float mTime; // it's internal time
 	float mTimePerParticle;
+
+        GLuint vao;
+        GLuint vbo;
+        GLuint ebo;
+        renderer::Texture *tex;
+        renderer::Shader* shaderProgram;
 };
 
 }

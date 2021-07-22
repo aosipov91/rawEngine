@@ -6,41 +6,29 @@
 namespace game {
 namespace particle {
 
-class Particle
+struct Particle_T
 {
-public:
-	Particle()
-		: prev(nullptr)
-		, next(nullptr)
-		, initialPos()
-		, initialVelocity()
-		, initialSize(0.0f)
-		, initialTime(0.0f)
-		, lifeTime(0.0f)
-		, mass(0.0f)
-		, initialColor()
-		, alive(false)
-	{
-	}
+    vec3 initialPos;
+    vec3 initialVelocity;
+    float initialSize;
+    float initialTime;
+    float lifeTime;
+    float mass;
+    vec3 initialColor;
+};
 
-	~Particle()
-	{
-		delete next;	
-		next = nullptr;
-		prev = nullptr;
-	}
+struct Particle
+{
+    vec3 initialPos;
+    vec3 initialVelocity;
+    float initialSize;
+    float initialTime;
+    float lifeTime;
+    float mass;
+    vec3 initialColor;
+    bool alive;
 
-	vec3 initialPos;
-	vec3 initialVelocity;
-	float initialSize;
-	float initialTime;
-	float lifeTime;
-	float mass;
-	vec3 initialColor;
-	bool alive;
-
-	Particle* prev;
-	Particle* next;
+    Particle* next;
 
 };
 

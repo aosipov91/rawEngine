@@ -61,7 +61,19 @@ create_mesh(const float* vertices,
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-    glBufferData(GL_ARRAY_BUFFER, nVertices * sizeof(float) * 5, vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, nVertices * sizeof(float) * 5, 0, GL_STATIC_DRAW);
+    float* pData = static_cast<float*>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
+    //memcpy(pData, vertices, nVertices * sizeof(float) * 5);
+    for (int i = 0; i < nVertices; i++)
+    {
+        *(pData++) = vertices[i * 5 + 0];
+        *(pData++) = vertices[i * 5 + 1];
+        *(pData++) = vertices[i * 5 + 2];
+        *(pData++) = vertices[i * 5 + 3];
+        *(pData++) = vertices[i * 5 + 4];
+    }
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+    //glBufferData(GL_ARRAY_BUFFER, nVertices * sizeof(float) * 5, vertices, GL_STATIC_DRAW);
     float *ptr = 0;
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float)*5, ptr+=0); // position
     glEnableVertexAttribArray( 0 );

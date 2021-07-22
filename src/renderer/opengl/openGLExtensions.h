@@ -25,6 +25,8 @@ extern PFNGLCOMPRESSEDTEXIMAGE2DPROC glCompressedTexImage2D;
 #endif
 
 
+extern PFNGLMAPBUFFERPROC glMapBuffer;
+extern PFNGLUNMAPBUFFERPROC glUnmapBuffer;
 extern PFNGLGETACTIVEUNIFORMPROC glGetActiveUniform;
 extern PFNGLDISABLEVERTEXATTRIBARRAYPROC glDisableVertexAttribArray;
 extern PFNGLVERTEXATTRIBDIVISORPROC glVertexAttribDivisor;

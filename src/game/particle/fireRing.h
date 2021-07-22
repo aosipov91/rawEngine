@@ -1,16 +1,17 @@
 #ifndef FIRE_RING_H_
 #define FIRE_RING_H_
 
-#include "particleSystem.h"
+#include "particleEmitter.h"
 
 namespace game {
 namespace particle {
 
-class FireRing : public ParticleSystem
+class FireRing : public ParticleEmitter
 {
 public:
     FireRing();
     ~FireRing();
+    void initParticle(Particle* out);
 };
 
 }

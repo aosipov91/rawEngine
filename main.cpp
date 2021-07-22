@@ -11,6 +11,7 @@
 #include "src/renderer/uniform.h"
 
 #include "src/game/particle/particleEmitter.h"
+#include "src/game/particle/fireRing.h"
 
 #include "src/util/ddsLoader.h"
 
@@ -20,65 +21,46 @@ namespace {
 constexpr int WIDTH = 600;
 constexpr int HEIGHT = 600;
 
+
+
 class PSystem : public core::Application
 {
 private:
     float deltaTime;
-	renderer::Shader* shaderProgram;
-    Mesh* mesh;
     mat4 proj;
     mat4 view;
     mat4 model;
-		renderer::Texture *tex;
-		game::particle::ParticleEmitter* particleEmitter;
+    game::particle::FireRing *particleEmitter;
 public:
     PSystem()
         : core::Application()
         , deltaTime(0.0f)
-        , mesh(nullptr)
-        , tex(0)
         , view()
         , proj()
         , model()
-        , shaderProgram(nullptr)
-				, particleEmitter(nullptr)
+        , particleEmitter(nullptr)
     {
 
 
     }
     bool init() {
 
-				view = lookAt(vec3(0.0f, 0.0f, 4.0f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
-				proj = perspective(90.0f, (float)WIDTH/(float)HEIGHT, 0.1f, 100.0f);
-				shaderProgram = new renderer::Shader("../data/shaders/trig_vertex.glsl", "../data/shaders/trig_fragment.glsl");
-				shaderProgram->Bind();
-				tex = new renderer::Texture("../data/textures/torch.dds");
-				renderer::Uniform<int>::Set(shaderProgram->GetUniform("Sampler0"), 0);
-				renderer::Uniform<mat4>::Set(shaderProgram->GetUniform("proj"), proj);
-				renderer::Uniform<mat4>::Set(shaderProgram->GetUniform("view"), view);
-				float vertices[] = {
-					-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,	
-					-1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-					1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-					1.0f, -1.0f, 0.0f, 1.0f, 0.0f
-				};
-				unsigned int indices[] = {0, 1, 2, 0, 2, 3};
+        view = lookAt(vec3(0.0f, 0.0f, 30.0f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
+        proj = perspective(90.0f, (float)WIDTH/(float)HEIGHT, 0.1f, 100.0f);
 
-				mesh = create_mesh(vertices, 4, indices,6);
-				particleEmitter = new game::particle::ParticleEmitter();
-				particleEmitter->create();
+        particleEmitter = new game::particle::FireRing();
+        particleEmitter->setProj(proj);
+        particleEmitter->setView(view);
+
 
         return true;
     }
     void render()
     {
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-				shaderProgram->Bind();
-				glActiveTexture(GL_TEXTURE0);
-				glBindTexture(GL_TEXTURE_2D, tex->GetHandle());
-				draw_mesh(mesh);
-        //glEnable(GL_DEPTH_TEST);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
+        particleEmitter->render();
     }
 
     void idle()
@@ -88,18 +70,17 @@ public:
             deltaTime = fmin(d, 1.0f / 60.0f);
             d -= deltaTime;
         }
-				particleEmitter->handleSmoke(deltaTime);
-				particleEmitter->update(deltaTime);
-				printf("%d\n", particleEmitter->count);
+
+        particleEmitter->update(deltaTime);
 
     }
     
     ~PSystem()
     {
-		destroy_mesh(mesh);
-		delete tex;
-		delete shaderProgram;
-		delete particleEmitter;
+                if (particleEmitter)
+                {
+                    delete particleEmitter;
+                }
     }
 };
 

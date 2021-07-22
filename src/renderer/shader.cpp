@@ -1,180 +1,174 @@
-#define _CRT_SECURE_NO_WARNINGS
 #include "shader.h"
-
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <string.h>
 
 namespace renderer {
 
-Shader::Shader() {
-	mHandle = glCreateProgram();
-}
 
-Shader::Shader(const std::string& vertex, const std::string& fragment) {
-	mHandle = glCreateProgram();
-	Load(vertex, fragment);
-}
 
-Shader::~Shader() {
-	glDeleteProgram(mHandle);
-}
-
-void Shader::Load(const std::string& vertex, const std::string& fragment) {
-	std::ifstream f(vertex.c_str());
-	bool vertFile = f.good();
-	f.close();
-
-	f = std::ifstream(vertex.c_str());
-	bool fragFile = f.good();
-	f.close();
-
-	std::string v_source = vertex;
-	if (vertFile) {
-		v_source = ReadFile(vertex);
-	}
-
-	std::string f_source = fragment;
-	if (fragFile) {
-		f_source = ReadFile(fragment);
-	}
-
-	unsigned int v_shader = CompileVertexShader(v_source);
-	unsigned int f_shader = CompileFragmentShader(f_source);
-	if (LinkShaders(v_shader, f_shader)) {
-		PopulateUniforms();
-	}
-}
-
-void Shader::Bind() {
-	glUseProgram(mHandle);
-}
-
-void Shader::UnBind() {
-	glUseProgram(0);
+GLuint load_program(const char *path1, const char *path2, const char *path3)
+{
+    GLuint shader1 = load_shader(GL_VERTEX_SHADER, path1);
+    GLuint shader2 = load_shader(GL_FRAGMENT_SHADER, path2);
+    GLuint shader3 = load_shader(GL_GEOMETRY_SHADER, path3);
+    GLuint program = make_program(shader1, shader2, shader3);
+    return program;
 }
 
 
-unsigned int Shader::GetUniform(const std::string& name) {
-	std::map<std::string, unsigned int>::iterator it = mUniforms.find(name);
-	if (it == mUniforms.end()) {
-		std::cout << "Retrieving bad uniform index: " << name << "\n";
-		return 0;
-	}
-	return it->second;
+GLuint load_program(const char *path1, const char *path2)
+{
+    GLuint shader1 = load_shader(GL_VERTEX_SHADER, path1);
+    GLuint shader2 = load_shader(GL_FRAGMENT_SHADER, path2);
+    GLuint program = make_program(shader1, shader2);
+    return program;
 }
 
-unsigned int Shader::GetHandle() {
-	return mHandle;
+void unload_shader_program(GLuint* id)
+{
+    glDeleteProgram(*id);
 }
 
-std::string Shader::ReadFile(const std::string& path) {
-	std::ifstream file;
-	file.open(path);
-	std::stringstream contents;
-	contents << file.rdbuf();
-	file.close();
-	return contents.str();
+char *load_file(const char *path) {
+    #if defined(_WIN32)
+    FILE *file;
+    fopen_s(&file, path, "rb");
+
+    #elif defined(__linux__)
+    FILE *file = fopen(path, "rb");
+    #endif
+    if (!file) {
+	fprintf(stderr, "fopen %s failed: %d %s\n", path, errno, strerror(errno));
+	exit(1);
+    }
+    fseek(file, 0, SEEK_END);
+    int length = ftell(file);
+    rewind(file);
+    char *data = (char*)calloc(length + 1, sizeof(char));
+    fread(data, 1, length, file);
+    fclose(file);
+    return data;
 }
 
-unsigned int Shader::CompileVertexShader(const std::string& vertex) {
-	unsigned int v_shader = glCreateShader(GL_VERTEX_SHADER);
-	const char* v_source = vertex.c_str();
-	glShaderSource(v_shader, 1, &v_source, NULL);
-	glCompileShader(v_shader);
-	int success = 0;
-	glGetShaderiv(v_shader, GL_COMPILE_STATUS, &success);
-	if (!success) {
-		char infoLog[512];
-		glGetShaderInfoLog(v_shader, 512, NULL, infoLog);
-		std::cout << "ERROR: Vertex compilation failed.\n";
-		std::cout << "\t" << infoLog << "\n";
-		glDeleteShader(v_shader);
-		return 0;
-	};
-	return v_shader;
+GLuint make_shader(GLenum type, const char *source) {
+    GLuint shader = glCreateShader(type);
+    glShaderSource(shader, 1, &source, NULL);
+    glCompileShader(shader);
+    GLint status;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+    if (status == GL_FALSE) {
+	GLint length;
+	glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+	GLchar *info = (GLchar*)calloc(length, sizeof(GLchar));
+	glGetShaderInfoLog(shader, length, NULL, info);
+	fprintf(stderr, "glCompileShader failed:\n%s\n %s", info, source);
+
+	free(info);
+    }
+    return shader;
 }
 
-unsigned int Shader::CompileFragmentShader(const std::string& fragment) {
-	unsigned int f_shader = glCreateShader(GL_FRAGMENT_SHADER);
-	const char* f_source = fragment.c_str();
-	glShaderSource(f_shader, 1, &f_source, NULL);
-	glCompileShader(f_shader);
-	int success = 0;
-	glGetShaderiv(f_shader, GL_COMPILE_STATUS, &success);
-	if (!success) {
-		char infoLog[512];
-		glGetShaderInfoLog(f_shader, 512, NULL, infoLog);
-		std::cout << "ERROR: Fragment compilation failed.\n";
-		std::cout << "\t" << infoLog << "\n";
-		glDeleteShader(f_shader);
-		return 0;
-	};
-	return f_shader;
+GLuint load_shader(GLenum type, const char *path) {
+    char *data = load_file(path);
+    GLuint result = make_shader(type, data);
+    free(data);
+    return result;
 }
 
-bool Shader::LinkShaders(unsigned int vertex, unsigned int fragment) {
-	glAttachShader(mHandle, vertex);
-	glAttachShader(mHandle, fragment);
-	glLinkProgram(mHandle);
-	int success = 0;
-	glGetProgramiv(mHandle, GL_LINK_STATUS, &success);
-	if (!success) {
-		char infoLog[512];
-		glGetProgramInfoLog(mHandle, 512, NULL, infoLog);
-		std::cout << "ERROR: Shader linking failed.\n";
-		std::cout << "\t" << infoLog << "\n";
-		glDeleteShader(vertex);
-		glDeleteShader(fragment);
-		return false;
-	}
+GLuint make_program(GLuint shader1, GLuint shader2, GLuint shader3) {
+    GLuint program = glCreateProgram();
+    glAttachShader(program, shader1);
+    glAttachShader(program, shader2);
+    glAttachShader(program, shader3);
+    glLinkProgram(program);
+    GLint status;
+    glGetProgramiv(program, GL_LINK_STATUS, &status);
+    if (status == GL_FALSE) {
+	GLint length;
+	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
+	GLchar *info = (GLchar*)calloc(length, sizeof(GLchar));
+	glGetProgramInfoLog(program, length, NULL, info);
+	fprintf(stderr, "glLinkProgram failed: %s\n", info);
+	free(info);
+    }
+    glDetachShader(program, shader1);
+    glDetachShader(program, shader2);
+    glDetachShader(program, shader3);
+    glDeleteShader(shader1);
+    glDeleteShader(shader2);
+    glDeleteShader(shader3);
+    return program;
+}
 
-	glDeleteShader(vertex);
-	glDeleteShader(fragment);
-
-	return true;
+GLuint make_program(GLuint shader1, GLuint shader2) {
+    GLuint program = glCreateProgram();
+    glAttachShader(program, shader1);
+    glAttachShader(program, shader2);
+    glLinkProgram(program);
+    GLint status;
+    glGetProgramiv(program, GL_LINK_STATUS, &status);
+    if (status == GL_FALSE) {
+	GLint length;
+	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
+	GLchar *info = (GLchar*)calloc(length, sizeof(GLchar));
+	glGetProgramInfoLog(program, length, NULL, info);
+	fprintf(stderr, "glLinkProgram failed: %s\n", info);
+	free(info);
+    }
+    glDetachShader(program, shader1);
+    glDetachShader(program, shader2);
+    glDeleteShader(shader1);
+    glDeleteShader(shader2);
+    return program;
 }
 
 
-void Shader::PopulateUniforms() {
-	int count = -1;
-	int length;
-	char name[128];
-	int size;
-	GLenum type;
-	char testName[256];
+void shader_uniform_1i(GLuint program, const char* name, const int value)
+{
+    // glUseProgram(program);
+    glUniform1i(glGetUniformLocation(program, name), value);
+    // glUseProgram(0);
+}
 
-	glUseProgram(mHandle);
-	glGetProgramiv(mHandle, GL_ACTIVE_UNIFORMS, &count);
+void shader_uniform_1f(GLuint program, const char* name, const int value)
+{
+    // glUseProgram(program);
+    glUniform1f(glGetUniformLocation(program, name), value);
+    // glUseProgram(0);
+}
 
-	for (int i = 0; i < count; ++i) {
-		memset(name, 0, sizeof(char) * 128);
-		glGetActiveUniform(mHandle, (GLuint)i, 128, &length, &size, &type, name);
+void shader_uniform_3f(GLuint program, const char* name, float x, float y, float z)
+{
+    const float data[3] = {x, y, z};
+    GLint loc = glGetUniformLocation(program, name);
+    if (loc == -1) {
+        fprintf(stderr, "glGetUniformLocation failed, programId = %u, uniforName = %s\n", program, name);
+    }
 
-		int uniform = glGetUniformLocation(mHandle, name);
-		if (uniform >= 0) {
-			std::string uniformName = name;
-			std::size_t found = uniformName.find('[');
-			if (found != std::string::npos) {
-				uniformName.erase(uniformName.begin() + found, uniformName.end());
-				// Populate subscripted names too
-				unsigned int uniformIndex = 0;
-				while (true) {
-					memset(testName, 0, sizeof(char) * 256);
-					sprintf(testName, "%s[%d]", uniformName.c_str(), uniformIndex++);
-					int uniformLocation = glGetUniformLocation(mHandle, testName);
-					if (uniformLocation < 0) {
-						break;
-					}
-					mUniforms[testName] = uniformLocation;
-				}
-			}
-			mUniforms[uniformName] = uniform;
-		}
-	}
+    glUniform3fv(loc, 1, (GLfloat*)data);
+}
 
-	glUseProgram(0);
+void shader_uniform_mat4(GLuint program, const char* name, const float* data)
+{
+    // glUseProgram(program);
+    glUniformMatrix4fv(glGetUniformLocation(program, name), 1, GL_FALSE, (GLfloat*)data);
+    // glUseProgram(0);
+}
+
+Shader::Shader()
+    : mHandle(0)
+{
+
+}
+Shader::~Shader()
+{
+
+}
+Shader::Shader(const char *path1, const char *path2)
+{
+    mHandle = load_program(path1, path2);    
+}
+Shader::Shader(const char *path1, const char *path2, const char *path3)
+{
+    mHandle = load_program(path1, path2, path3);    
 }
 
 }

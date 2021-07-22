@@ -1,131 +1,223 @@
 #include "particleEmitter.h"
 #include <stdio.h>
+#include <string.h>
+#include "src/core/timer.h"
 
 
 namespace game {
 namespace particle {
 
 ParticleEmitter::ParticleEmitter()
-	: mParticles(nullptr)
-	, count(0)
+	: count(0)
 	, mTime(0.0f)
 	, mTimePerParticle(0.0025f)
+        , mInitParticles(false)
+        , shaderProgram(nullptr)
+        , tex(nullptr)
 {
 
+    create();
+    createBuffer();
+    printf("%lu\n", sizeof(Particle));
+    printf("%lu\n", sizeof(Particle_T));
 }
 
 ParticleEmitter::~ParticleEmitter()
 {
-	if (mParticles)
-	{
-		delete mParticles;
-		mParticles = nullptr;
-	}
+    mAliveParticles = nullptr;
+    mDeadParticles = nullptr;
+    if (shaderProgram)
+    {
+        delete shaderProgram;
+    }
+    if (tex)
+    {
+        delete tex;
+    }
+}
+
+
+void ParticleEmitter::createBuffer()
+{
+        shaderProgram = new renderer::Shader(
+                        "../data/shaders/particles/point_vertex.glsl",
+                        "../data/shaders/particles/point_fragment.glsl",
+                        "../data/shaders/particles/point_geom.glsl");
+
+    shaderProgram->Bind();
+    tex = new renderer::Texture("../data/textures/torch.dds");
+    renderer::Uniform<int>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "SpriteTex"), 0);
+    //renderer::Uniform<float>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "Size2"), 0.5f);
+    glUniform1f(glGetUniformLocation(shaderProgram->GetHandle(), "Size2"), 0.15f);
+    //renderer::Uniform<float>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "gTime"), get_running_time(timer));
+    glUniform1f(glGetUniformLocation(shaderProgram->GetHandle(), "gTime"), get_running_time(timer));
+    renderer::Uniform<vec3>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "gAccel"), vec3(0.0f, 0.9f, 0.0f));
+
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+    glBufferData(GL_ARRAY_BUFFER, MAX_PARTICLES * sizeof(Particle_T), 0, GL_STREAM_DRAW);
+    float *ptr = 0;
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Particle_T), (GLvoid*)(ptr+=0)); // position
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Particle_T), (GLvoid*)(ptr+=3)); // vel
+    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(Particle_T), (GLvoid*)(ptr+=3)); // size
+    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Particle_T), (GLvoid*)(ptr+=1)); // teme
+    glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(Particle_T), (GLvoid*)(ptr+=1)); // lifeTime
+    glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(Particle_T), (GLvoid*)(ptr+=1)); // mass
+    glVertexAttribPointer(6, 3, GL_FLOAT, GL_FALSE, sizeof(Particle_T), (GLvoid*)(ptr+=1)); // mass
+    glEnableVertexAttribArray( 0 );
+    glEnableVertexAttribArray( 1 );
+    glEnableVertexAttribArray( 2 );
+    glEnableVertexAttribArray( 3 );
+    glEnableVertexAttribArray( 4 );
+    glEnableVertexAttribArray( 5 );
+    glEnableVertexAttribArray( 6 );
+
+    glBindVertexArray(0);
 }
 
 void ParticleEmitter::create()
 {
+    memset(mParticles, 0, sizeof(Particle));
+    memset(mTestParticles, 0, sizeof(Particle));
+
+    mDeadParticles = &mParticles[0];
+    mAliveParticles = nullptr;
+    for (int i = 0; i < MAX_PARTICLES; i++)
+    {
+        mParticles[i].next = &mParticles[i+1];
+        mParticles[i].lifeTime = -1.0f;
+        mParticles[i].initialTime = 0.0f;
+    }
+    mParticles[MAX_PARTICLES-1].next = nullptr;
+
+    mInitParticles = true;
 }
 
-void ParticleEmitter::add(vec3 pos, vec3 velocity, float size, float time, float life, float mass, vec3 color)
+
+void ParticleEmitter::insert()
 {
-	Particle *particle = new Particle();	
-	particle->prev = nullptr;
-	if((particle->next = mParticles))
-	{
-		mParticles->prev = particle;	
-	}
-	mParticles = particle;
+    Particle *particle;
+    if (!mDeadParticles) {
+        return;
+    }
+    particle = mDeadParticles;
+    mDeadParticles = particle->next;
+    particle->next = mAliveParticles;
+    mAliveParticles = particle;
 
-	particle->initialPos = pos;
-	particle->initialVelocity = velocity;
-	particle->initialSize = size;
-	particle->initialTime = mTime;
-	particle->lifeTime = life;
-	particle->mass = mass;
-	particle->initialColor = color;
-	particle->alive = true;
+    initParticle(particle);
+    count++;
 }
+
 
 void ParticleEmitter::update(float deltaTime)
 {
+    Particle* p, *next;
+    Particle* active, *tail;
+    mTime += deltaTime;
 
-	mTime += deltaTime;
+    if (!mInitParticles)
+        create();
 
-	Particle *particle = mParticles;
+    active = nullptr;
+    tail = nullptr;
+    for (p = mAliveParticles; p ; p = next)
+    {
+        next = p->next;
+        // Is the particle dead?
+        if( (mTime - p->initialTime) > p->lifeTime)
+        {
+            p->next = mDeadParticles;
+            mDeadParticles = p;
+            p->initialColor = vec3();
+            count--;
+            continue;
+        }
 
-	// Loop through all particles
-	while(particle != nullptr)
-	{
-		// Remember next particle
-		Particle *nextParticle = particle->next;
+        p->next = nullptr;
+        if (!tail) {
+            active = tail = p;
+        } else { 
+            tail->next = p;
+            tail = p;
+        }
+    }
+    mAliveParticles = active;
 
-		// set flag to remove from list
-		bool removeFromList = false;
-
-		if (particle->lifeTime)
-		{
-			if( (mTime - particle->initialTime > particle->lifeTime))
-			{
-				removeFromList = true;	
-			}	
-			else
-			{
-				particle->lifeTime = 0.0;	
-			}
-		}
-
-
-		// remove particle from list if flagged
-		if (removeFromList == true)
-		{
-			if (particle->prev)
-			{
-				particle->prev->next = particle->next;	
-			}	
-			else
-			{
-				mParticles = particle->next;	
-			}
-
-			if (particle->next)
-			{
-				particle->next->prev = particle->prev;	
-			}
-
-			particle->prev = nullptr;
-			particle->next = nullptr;
-			delete particle;
-		}
-
-
-		count++;
-
-		// go to next particle
-		particle = nextParticle;
-	}
+    // A negative or zero mTimePerParticle value denotes
+    // not to emit any particles.
+    if( mTimePerParticle > 0.0f )
+    {
+            // Emit particles.
+            static float timeAccum = 0.0f;
+            timeAccum += deltaTime;
+            while( timeAccum >= mTimePerParticle )
+            {
+                    insert();
+                    timeAccum -= mTimePerParticle;
+            }
+    }
 }
 
-void ParticleEmitter::handleSmoke(float deltaTime)
-{
-	if (mTimePerParticle > 0.0f)
-	{
-		static float timeAccum = 0.0f;
-		timeAccum += deltaTime;
-		while (timeAccum >= mTimePerParticle)
-		{
-			add(vec3(0.0f, 4.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f),
-						mTime, 2.5f, .5f, 2.0f, vec3(1.0f, 0.0f, 0.0f));
-			timeAccum -= mTimePerParticle;
-		}
-	}
-}
 
 void ParticleEmitter::render()
 {
+    shaderProgram->Bind();
+
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE);
+
+    renderer::Uniform<vec3>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "eyePos"), vec3(0.0f, 0.0f, 30.0f));
+    tex->Set(glGetUniformLocation(shaderProgram->GetHandle(), "SpriteTex"), 0);
+    glBindVertexArray(vao);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+    float* pData = static_cast<float*>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
+    //memcpy(pData, vertices, nVertices * sizeof(float) * 5);
+    for (Particle* p = mAliveParticles; p; p = p->next)
+    {
+        //memcpy(pData, p, sizeof(Particle_T));
+        *(pData++)=p->initialPos.x;
+        *(pData++)=p->initialPos.y;
+        *(pData++)=p->initialPos.z;
+        *(pData++)=p->initialVelocity.x;
+        *(pData++)=p->initialVelocity.y;
+        *(pData++)=p->initialVelocity.z;
+        *(pData++)=p->initialSize;
+        *(pData++)=p->lifeTime;
+        *(pData++)=p->mass;
+        *(pData++)=p->initialColor.x;
+        *(pData++)=p->initialColor.y;
+        *(pData++)=p->initialColor.z;
+
+    }
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+
+    glDrawArrays(GL_POINTS, 0, count);
+    glBindVertexArray(0);
+
+    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
 
 }
 
+void ParticleEmitter::setProj(mat4& proj)
+{
+    shaderProgram->Bind();
+    //renderer::Uniform<mat4>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "ProjectionMatrix"), proj);
+    renderer::shader_uniform_mat4(shaderProgram->GetHandle(), "ProjectionMatrix", &proj.v[0]);
+}
+void ParticleEmitter::setView(mat4& view)
+{
+    shaderProgram->Bind();
+    //renderer::Uniform<mat4>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "ModelViewMatrix"), view);
+    renderer::shader_uniform_mat4(shaderProgram->GetHandle(), "ModelViewMatrix", &view.v[0]);
+}
 
 
 }
