@@ -30,17 +30,7 @@ ${PLATFORM_SOURCES}
 	"src/renderer/data/mesh.cpp"
 	"src/renderer/texture.h"
 	"src/renderer/texture.cpp"
-	"src/renderer/uniform.h"
-	"src/renderer/uniform.cpp"
 
-	"src/math/mat4.h"
-	"src/math/mat4.cpp"
-	"src/math/vec4.h"
-	"src/math/vec3.h"
-	"src/math/vec3.cpp"
-	"src/math/vec2.h"
-	"src/math/quat.h"
-	"src/math/quat.cpp"
 
 
 	"src/util/ddsLoader.h"
@@ -54,10 +44,15 @@ ${PLATFORM_SOURCES}
 	"src/game/particle/particleEmitter.cpp"
 	"src/game/particle/fireRing.h"
 	"src/game/particle/fireRing.cpp"
+	"src/game/camera.h"
+	"src/game/camera.cpp"
+	"src/game/player.h"
+	"src/game/player.cpp"
 
 )
 
 include_directories("libs/")
+include_directories("libs/glm/")
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(${PROJECT_NAME} ${SOURCES_FILES_MAIN})
@@ -66,7 +61,7 @@ if (MSVC)
 else()
 	target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} -lX11 -lm -lGLU -lXxf86vm)
     set (CMAKE_CXX_FLAGS "-g")
-	target_compile_options(${PROJECT_NAME} PRIVATE -fpermissive)
+		#target_compile_options(${PROJECT_NAME} PRIVATE -fpermissive)
 
 	#target_compile_options(${PROJECT_NAME} PRIVATE -O1 -fno-rtti -fno-exceptions -fno-inline-functions -Wall -Wextra -pedantic -Werror)
 endif()

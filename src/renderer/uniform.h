@@ -1,11 +1,8 @@
 #ifndef UNIFORM_H_
 #define UNIFORM_H_
 
-#include "src/math/vec2.h"
-#include "src/math/vec3.h"
-#include "src/math/vec4.h"
-#include "src/math/mat4.h"
-#include "src/math/quat.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <vector>
 

@@ -2,13 +2,15 @@
 #define PARTICLE_EMITTER_H_
 
 
-#include "src/math/vec3.h"
-#include "src/math/mat4.h"
+#include <glm/vec3.hpp>
+#include <glm/matrix.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "particle.h"
 #include "src/renderer/opengl/openGLExtensions.h"
 #include "src/renderer/texture.h"
 #include "src/renderer/shader.h"
-#include "src/renderer/uniform.h"
 
 #include <vector>
 
@@ -28,8 +30,8 @@ public:
 	void update(float deltaTime);
 	void render();
         void createBuffer();
-        void setProj(mat4& proj);
-        void setView(mat4& view);
+        void setProj(glm::mat4& proj);
+        void setView(glm::mat4& view);
 	void addParticle();
 
         virtual void initParticle(Particle& out) = 0; 

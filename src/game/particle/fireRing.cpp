@@ -2,6 +2,7 @@
 #include <cmath>
 #include "src/math/random.h"
 #include "src/math/constant.h"
+#include <glm/gtc/constants.hpp>
 
 namespace game {
 namespace particle {
@@ -22,7 +23,7 @@ void FireRing::initParticle(Particle& out)
     out.initialColor =math::WHITE * math::GetRandomFloat(0.5f, 1.0f);
 
     float r = math::GetRandomFloat(10.0f, 14.0f);
-    float t = math::GetRandomFloat(0, 2.0f * math::PI);
+    float t = math::GetRandomFloat(0, 2.0f * glm::pi<float>());
 
     out.initialPos.x = r* cos(t);
     out.initialPos.y = r* sin(t);

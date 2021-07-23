@@ -19,6 +19,7 @@ static GLXContext context;
 static Atom WM_DELETE_WINDOW;
 static Cursor cursor;
 static int done;
+static Cursor blankCursor;
 
 typedef GLXContext (*glXCreateContextAttribsARBProc)
 	(Display*, GLXFBConfig, GLXContext, Bool, const int*);
@@ -31,6 +32,15 @@ Application::Application() {
 	init_timer(timer);
 	display = XOpenDisplay(NULL);
 	if(!display) exit("couldn`t open display");
+
+    mouseCaptured = false;
+    mouseDelta = glm::vec2();
+    mouseSensibility = .3f;
+    #if defined(_WIN32)
+    invertMouse = false;
+    #elif defined(__linux__)
+    invertMouse = true;
+    #endif
 }
 
 Application::~Application() {
@@ -143,6 +153,8 @@ bool Application::setVideoMode(int w,int h,bool fs) {
 		}
 		
 		window = XCreateWindow(display,rootWindow,0,0,mWindowWidth,mWindowHeight,0,visual->depth,InputOutput,visual->visual,mask,&attr);
+		createBlankCursor();
+
 		XMapWindow(display,window);
 		
 		if(mFullScreen) {
@@ -171,6 +183,71 @@ bool Application::setVideoMode(int w,int h,bool fs) {
 		return false;
 	}
 	return true;
+}
+
+bool Application::onMouseMove(const int x, const int y){
+    
+    if (mouseCaptured)
+    {
+
+			static bool changed = false;
+			if (changed = !changed){
+				mouseDelta.x += (invertMouse? 1 : -1) * mouseSensibility * (mWindowHeight / 2 - y);
+				mouseDelta.y += (invertMouse? 1 : -1) * mouseSensibility * (mWindowWidth / 2 - x);
+				setCursorPos(mWindowWidth / 2, mWindowHeight / 2);
+			}
+	
+    }
+    return false;
+}
+
+void Application::setCursorPos(const int x, const int y){
+    XWarpPointer(display, None, window, 0, 0, 0, 0, x, y);
+    XFlush(display);
+}
+
+void Application::captureMouse(const bool value){
+	if (mouseCaptured != value)
+	{
+		static int mouseX, mouseY;
+		if (value){
+			XGrabPointer(display, window, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, window, blankCursor, CurrentTime);
+
+			int rx, ry;
+			unsigned int mask;
+			Window root, child;
+			XQueryPointer(display, window, &root, &child, &rx, &ry, &mouseX, &mouseY, &mask);
+			setCursorPos(mWindowWidth / 2, mWindowHeight / 2);
+		} else {
+			setCursorPos(mouseX, mouseY);
+			XUngrabPointer(display, CurrentTime);
+		}
+
+		mouseCaptured = value;
+	}
+}
+
+
+bool Application::onMouseButton(const int x, const int y, const MouseButton button, const bool pressed){
+  if (!mouseCaptured){
+
+		if (button == MOUSE_LEFT && pressed){
+				captureMouse(true);
+				return true;
+		}
+
+  }
+  return false;
+}
+
+void Application::createBlankCursor()
+{
+    XColor dummy;
+    char data = 0;
+    Pixmap blank = XCreateBitmapFromData(display, window, &data, 1, 1);
+    blankCursor = XCreatePixmapCursor(display, blank, blank, &dummy, &dummy, 0, 0);
+    XFreePixmap(display, blank);
+    XGrabKeyboard(display, window, True, GrabModeAsync, GrabModeAsync, CurrentTime);
 }
 
 /*
@@ -322,16 +399,41 @@ void Application::main() {
 					if(key) keyRelease(key);
 					break;
 				case MotionNotify:
+					static int lastX, lastY;
+					onMouseMove(event.xmotion.x, event.xmotion.y);
+					lastX = event.xmotion.x;
+					lastY = event.xmotion.y;
+
 					mMouseX = event.xmotion.x;
 					mMouseY = event.xmotion.y;
 					break;
 				case ButtonPress:
 					mMouseButton |= 1 << ((event.xbutton.button - 1));
 					buttonPress(1 << (event.xbutton.button - 1));
+					
+					onMouseButton(event.xbutton.x, event.xbutton.y, (MouseButton) (event.xbutton.button - 1), true);
+					if ((event.xbutton.button -1 ) == MOUSE_RIGHT){
+						mouseStates[MOUSE_RIGHT] = true;
+					}
+
+					if ((event.xbutton.button -1 ) == MOUSE_LEFT){
+						mouseStates[MOUSE_LEFT] = true;
+					}
+
 					break;
 				case ButtonRelease:
 					if(event.xbutton.button < 4) mMouseButton &= ~(1 << (event.xbutton.button - 1));
 					buttonRelease(1 << (event.xbutton.button - 1));
+
+					onMouseButton(event.xbutton.x, event.xbutton.y, (MouseButton) (event.xbutton.button - 1), false);
+					if ((event.xbutton.button -1 ) == MOUSE_RIGHT){
+						mouseStates[MOUSE_RIGHT] = false;
+					}
+
+					if ((event.xbutton.button -1 ) == MOUSE_LEFT){
+						mouseStates[MOUSE_LEFT] = false;
+					}
+
 					break;
 			}
 		}
@@ -351,6 +453,8 @@ void Application::main() {
 		mMouseButton &= ~(BUTTON_UP | BUTTON_DOWN);
 	}
 }
+
+
 
 #else
 

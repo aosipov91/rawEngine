@@ -63,7 +63,8 @@ void ParticleEmitter::createBuffer()
 
     shaderProgram->Bind();
     tex = new renderer::Texture("../data/textures/torch.dds");
-    renderer::Uniform<int>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "SpriteTex"), 0);
+    //renderer::Uniform<int>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "SpriteTex"), 0);
+    glUniform1i(glGetUniformLocation(shaderProgram->GetHandle(), "SpriteTex"), 0);
     //renderer::Uniform<float>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "Size2"), 0.5f);
     glUniform1f(glGetUniformLocation(shaderProgram->GetHandle(), "Size2"), 5.f);
     //renderer::Uniform<float>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "gTime"), get_running_time(timer));
@@ -145,7 +146,7 @@ void ParticleEmitter::render()
     glBlendFunc(GL_ONE, GL_ONE );
 
     glUniform1f(glGetUniformLocation(shaderProgram->GetHandle(), "gTime"), mTime);
-    renderer::Uniform<vec3>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "eyePos"), vec3(0.0f, 0.0f, 20.0f));
+		renderer::shader_uniform_3f(shaderProgram->GetHandle(), "eyePos", 0.0f, 0.0f, 20.0f);
     tex->Set(glGetUniformLocation(shaderProgram->GetHandle(), "SpriteTex"), 0);
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -177,17 +178,17 @@ void ParticleEmitter::render()
 
 }
 
-void ParticleEmitter::setProj(mat4& proj)
+void ParticleEmitter::setProj(glm::mat4& proj)
 {
     shaderProgram->Bind();
     //renderer::Uniform<mat4>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "ProjectionMatrix"), proj);
-    renderer::shader_uniform_mat4(shaderProgram->GetHandle(), "ProjectionMatrix", &proj.v[0]);
+    renderer::shader_uniform_mat4(shaderProgram->GetHandle(), "ProjectionMatrix", glm::value_ptr(proj));
 }
-void ParticleEmitter::setView(mat4& view)
+void ParticleEmitter::setView(glm::mat4& view)
 {
     shaderProgram->Bind();
     //renderer::Uniform<mat4>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "ModelViewMatrix"), view);
-    renderer::shader_uniform_mat4(shaderProgram->GetHandle(), "ModelViewMatrix", &view.v[0]);
+    renderer::shader_uniform_mat4(shaderProgram->GetHandle(), "ModelViewMatrix", glm::value_ptr(view));
 }
 
 
