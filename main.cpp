@@ -45,7 +45,7 @@ public:
     }
     bool init() {
 
-        view = lookAt(vec3(0.0f, 0.0f, 30.0f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
+        view = lookAt(vec3(0.0f, 0.0f, 20.0f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
         proj = perspective(90.0f, (float)WIDTH/(float)HEIGHT, 0.1f, 100.0f);
 
         particleEmitter = new game::particle::FireRing();
@@ -57,7 +57,7 @@ public:
     }
     void render()
     {
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClearColor(.4f, 0.4f, 0.4f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         particleEmitter->render();
     }
@@ -67,9 +67,11 @@ public:
         float d = (float)get_delta_time(timer);
         while (d > 0.0f) {
             deltaTime = fmin(d, 1.0f / 60.0f);
+        		particleEmitter->update(deltaTime);
             d -= deltaTime;
         }
-        particleEmitter->update(deltaTime);
+
+				//printf("End update\n");
 
 
     }

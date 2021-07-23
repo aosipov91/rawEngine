@@ -10,6 +10,8 @@
 #include "src/renderer/shader.h"
 #include "src/renderer/uniform.h"
 
+#include <vector>
+
 namespace game {
 namespace particle {
 
@@ -23,31 +25,30 @@ public:
 		MAX_PARTICLES = 1500
 	};
 
-	void create();
-        void insert();
 	void update(float deltaTime);
 	void render();
         void createBuffer();
         void setProj(mat4& proj);
         void setView(mat4& view);
+	void addParticle();
 
-        virtual void initParticle(Particle* out) = 0; 
+        virtual void initParticle(Particle& out) = 0; 
 
-	Particle mParticles[MAX_PARTICLES];
-	Particle* mAliveParticles;
-	Particle* mDeadParticles;
+	std::vector<Particle> mParticles;
+	std::vector<Particle*> mAliveParticles;
+	std::vector<Particle*> mDeadParticles;
 
-        bool mInitParticles;
+  bool mInitParticles;
 
 	unsigned int count;
 	float mTime; // it's internal time
 	float mTimePerParticle;
 
-        GLuint vao;
-        GLuint vbo;
-        GLuint ebo;
-        renderer::Texture *tex;
-        renderer::Shader* shaderProgram;
+	GLuint vao;
+	GLuint vbo;
+	GLuint ebo;
+	renderer::Texture *tex;
+	renderer::Shader* shaderProgram;
 };
 
 }

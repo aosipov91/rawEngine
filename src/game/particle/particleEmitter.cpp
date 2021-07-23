@@ -16,16 +16,21 @@ ParticleEmitter::ParticleEmitter()
         , tex(nullptr)
 {
 
-    create();
+	mParticles.resize(MAX_PARTICLES);
+	mAliveParticles.resize(MAX_PARTICLES);
+	mDeadParticles.resize(MAX_PARTICLES);
+
+	for(int i = 0; i < MAX_PARTICLES; ++i)
+	{
+		mParticles[i].lifeTime = -1.0f;	
+		mParticles[i].initialTime = 0.0f;
+	}
+
     createBuffer();
-    printf("%lu\n", sizeof(Particle));
-    printf("%lu\n", sizeof(Particle_T));
 }
 
 ParticleEmitter::~ParticleEmitter()
 {
-    mAliveParticles = nullptr;
-    mDeadParticles = nullptr;
     if (shaderProgram)
     {
         delete shaderProgram;
@@ -34,6 +39,18 @@ ParticleEmitter::~ParticleEmitter()
     {
         delete tex;
     }
+}
+
+void ParticleEmitter::addParticle()
+{
+		if (mDeadParticles.size() > 0)
+		{
+				Particle* p= mDeadParticles.back();	
+				initParticle(*p);
+
+				mDeadParticles.pop_back();
+				mAliveParticles.push_back(p);
+		}
 }
 
 
@@ -80,76 +97,28 @@ void ParticleEmitter::createBuffer()
     glBindVertexArray(0);
 }
 
-void ParticleEmitter::create()
-{
-    memset(mParticles, 0, sizeof(Particle));
-
-    mDeadParticles = &mParticles[0];
-    mAliveParticles = nullptr;
-    for (int i = 0; i < MAX_PARTICLES; i++)
-    {
-        mParticles[i].next = &mParticles[i+1];
-        mParticles[i].lifeTime = -1.0f;
-        mParticles[i].initialTime = 0.0f;
-    }
-    mParticles[MAX_PARTICLES-1].next = nullptr;
-
-    mInitParticles = true;
-}
-
-
-void ParticleEmitter::insert()
-{
-    Particle *particle;
-    if (!mDeadParticles) {
-        return;
-    }
-    particle = mDeadParticles;
-    mDeadParticles = particle->next;
-    particle->next = mAliveParticles;
-    mAliveParticles = particle;
-
-    initParticle(particle);
-    count++;
-}
 
 
 void ParticleEmitter::update(float deltaTime)
 {
-    Particle* p, *next;
-    Particle* active, *tail;
-
     mTime += deltaTime;
 
-    if (!mInitParticles)
-        create();
 
-    active = nullptr;
-    tail = nullptr;
-    for (p = mAliveParticles; p ; p = next)
-    {
-        next = p->next;
-        // Is the particle dead?
-        if( (mTime - p->initialTime) > p->lifeTime)
-        {
-            p->next = mDeadParticles;
-            mDeadParticles = p;
-            //p->initialColor = vec3();
-						p->initialTime = 0.0f;
-						p->lifeTime = -1.0f;
-            count--;
-            continue;
-        }
+		mDeadParticles.resize(0);
+		mAliveParticles.resize(0);
 
-        p->next = nullptr;
-        if (!tail) {
-            active = tail = p;
-        } else { 
-            tail->next = p;
-            tail = p;
-        }
-    }
-    mAliveParticles = active;
+		for (int i = 0; i < MAX_PARTICLES; ++i)
+		{
+			if ((mTime - mParticles[i].initialTime) > mParticles[i].lifeTime)	
+			{
+				mDeadParticles.push_back(&mParticles[i]);	
+			}
+			else
+			{
+				mAliveParticles.push_back(&mParticles[i]);	
+			}
+		}
+
 
     // A negative or zero mTimePerParticle value denotes
     // not to emit any particles.
@@ -160,7 +129,7 @@ void ParticleEmitter::update(float deltaTime)
             timeAccum += deltaTime;
             while( timeAccum >= mTimePerParticle )
             {
-                    insert();
+                    addParticle();
                     timeAccum -= mTimePerParticle;
             }
     }
@@ -175,32 +144,33 @@ void ParticleEmitter::render()
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE );
 
-    renderer::Uniform<vec3>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "eyePos"), vec3(0.0f, 0.0f, 30.0f));
+    glUniform1f(glGetUniformLocation(shaderProgram->GetHandle(), "gTime"), mTime);
+    renderer::Uniform<vec3>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "eyePos"), vec3(0.0f, 0.0f, 20.0f));
     tex->Set(glGetUniformLocation(shaderProgram->GetHandle(), "SpriteTex"), 0);
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
     float* pData = static_cast<float*>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
-    for (Particle* p = mAliveParticles; p; p = p->next)
+    for (int i = 0; i < mAliveParticles.size(); ++i)
     {
-        *(pData++)=p->initialPos.x;
-        *(pData++)=p->initialPos.y;
-        *(pData++)=p->initialPos.z;
-        *(pData++)=p->initialVelocity.x;
-        *(pData++)=p->initialVelocity.y;
-        *(pData++)=p->initialVelocity.z;
-        *(pData++)=p->initialSize;
-				*(pData++)=p->initialTime;
-        *(pData++)=p->lifeTime;
-        *(pData++)=p->mass;
-        *(pData++)=p->initialColor.x;
-        *(pData++)=p->initialColor.y;
-        *(pData++)=p->initialColor.z;
+        *(pData++)=mAliveParticles[i]->initialPos.x;
+        *(pData++)=mAliveParticles[i]->initialPos.y;
+        *(pData++)=mAliveParticles[i]->initialPos.z;
+        *(pData++)=mAliveParticles[i]->initialVelocity.x;
+        *(pData++)=mAliveParticles[i]->initialVelocity.y;
+        *(pData++)=mAliveParticles[i]->initialVelocity.z;
+        *(pData++)=mAliveParticles[i]->initialSize;
+				*(pData++)=mAliveParticles[i]->initialTime;
+        *(pData++)=mAliveParticles[i]->lifeTime;
+        *(pData++)=mAliveParticles[i]->mass;
+        *(pData++)=mAliveParticles[i]->initialColor.x;
+        *(pData++)=mAliveParticles[i]->initialColor.y;
+        *(pData++)=mAliveParticles[i]->initialColor.z;
 
     }
     glUnmapBuffer(GL_ARRAY_BUFFER);
 
-    glDrawArrays(GL_POINTS, 0, count);
+    glDrawArrays(GL_POINTS, 0, mAliveParticles.size());
     glBindVertexArray(0);
 
     glDisable(GL_BLEND);

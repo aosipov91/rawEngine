@@ -47,7 +47,7 @@ void main()
 
 		pointSize += 8.0 * t * t;
     float d = distance(posL, eyePos);
-    vertex.size = 720.0*pointSize/(1.0 + 8.0 * d);
+    vertex.size = 720.0/(1.0 + 8.0 * d);
 
     vertex.color = vec3((1.0f - (t / lifeTime)));
 
