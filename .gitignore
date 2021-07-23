@@ -1,5 +1,7 @@
+cmake-build-debug/
 winBuild/
 build/
 *.swp
 *.txt
 !CMakeLists.txt
+.idea/

@@ -6,7 +6,7 @@
 namespace game {
 namespace particle {
 
-struct Particle_T
+struct RealParticle
 {
 	glm::vec3 initialPos;
 	glm::vec3 initialVelocity;
@@ -14,7 +14,7 @@ struct Particle_T
     float initialTime;
     float lifeTime;
     float mass;
-		glm::vec3 initialColor;
+    glm::vec3 initialColor;
 };
 
 struct Particle
@@ -25,7 +25,7 @@ struct Particle
     float initialTime;
     float lifeTime;
     float mass;
-		glm::vec3 initialColor;
+    glm::vec3 initialColor;
     bool alive;
 
     Particle* next;

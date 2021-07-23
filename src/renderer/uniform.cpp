@@ -17,7 +17,7 @@ template class Uniform<glm::mat4>;
 #define UNIFORM_IMPL(gl_func, tType, dType) \
 template<> \
 void Uniform<tType>::Set(unsigned int slot, tType* data, unsigned int length) { \
-	gl_func(slot, (GLsizei)length, glm::value_ptr(data)); \
+	gl_func(slot, (GLsizei)length, (dType)&data[0]); \
 }
 
 UNIFORM_IMPL(glUniform1iv, int, int)
@@ -28,7 +28,7 @@ UNIFORM_IMPL(glUniform4fv, glm::vec4, float)
 UNIFORM_IMPL(glUniform4fv, glm::quat, float)
 
 template<>
-void Uniform<mat4>::Set(unsigned int slot, mat4* inputArray, unsigned int arrayLength) {
+void Uniform<glm::mat4>::Set(unsigned int slot, glm::mat4* inputArray, unsigned int arrayLength) {
 	glUniformMatrix4fv(slot, (GLsizei)arrayLength, false, (float*)&inputArray[0]);
 }
 

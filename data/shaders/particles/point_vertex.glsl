@@ -15,11 +15,12 @@ uniform vec3 gAccel;
 uniform mat4 ModelViewMatrix;
 uniform mat4 ProjectionMatrix;
 uniform float gTime;
+uniform float glViewportHeight;
 
 out vData
 {
     float size;
-		vec3 color;
+    vec4 color;
 }vertex;
 
 
@@ -45,11 +46,11 @@ void main()
     // Constant acceleration.
     posL = posL + velocity*t + 0.5f * gAccel * t * t;
 
-		pointSize += 8.0 * t * t;
+    pointSize += 8.0 * t * t;
     float d = distance(posL, eyePos);
-    vertex.size = 720.0/(1.0 + 8.0 * d);
+    vertex.size = glViewportHeight/(1.0 + 8.0 * d);
 
-    vertex.color = vec3((1.0f - (t / lifeTime)));
+    vertex.color = vec4((1.0f - (t / lifeTime)));
 
     gl_Position = ModelViewMatrix * vec4(posL,1.0);
 }

@@ -1,6 +1,5 @@
 #ifndef CAMERA_H_
 #define CAMERA_H_
-#include <stdbool.h>
 
 #include <glm/vec3.hpp>
 #include <glm/matrix.hpp>
@@ -10,10 +9,9 @@
 class Camera
 {
 public:
-
-		Camera(float aspect);
+		explicit Camera(float aspect);
 		~Camera();
-		void update(float deltaTime);
+		void update();
 
 		glm::vec3 pos;
 		glm::vec3 rot;

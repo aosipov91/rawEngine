@@ -1,4 +1,5 @@
 #include "fireRing.h"
+
 #include <cmath>
 #include "src/math/random.h"
 #include "src/math/constant.h"
@@ -10,8 +11,7 @@ namespace particle {
 FireRing::FireRing()
 : ParticleEmitter()
 {}
-FireRing::~FireRing()
-{}
+FireRing::~FireRing() = default;
 
 void FireRing::initParticle(Particle& out)
 {
