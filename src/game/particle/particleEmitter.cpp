@@ -48,10 +48,11 @@ void ParticleEmitter::createBuffer()
     tex = new renderer::Texture("../data/textures/torch.dds");
     renderer::Uniform<int>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "SpriteTex"), 0);
     //renderer::Uniform<float>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "Size2"), 0.5f);
-    glUniform1f(glGetUniformLocation(shaderProgram->GetHandle(), "Size2"), 0.15f);
+    glUniform1f(glGetUniformLocation(shaderProgram->GetHandle(), "Size2"), 5.f);
     //renderer::Uniform<float>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "gTime"), get_running_time(timer));
-    glUniform1f(glGetUniformLocation(shaderProgram->GetHandle(), "gTime"), get_running_time(timer));
-    renderer::Uniform<vec3>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "gAccel"), vec3(0.0f, 0.9f, 0.0f));
+    glUniform1f(glGetUniformLocation(shaderProgram->GetHandle(), "gTime"), mTime);
+    //renderer::Uniform<vec3>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "gAccel"), vec3(0.0f, 0.9f, 0.0f));
+		renderer::shader_uniform_3f(shaderProgram->GetHandle(), "gAccel", 0.0f, 0.9f, 0.0f);
 
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
@@ -64,10 +65,10 @@ void ParticleEmitter::createBuffer()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Particle_T), (GLvoid*)(ptr+=0)); // position
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Particle_T), (GLvoid*)(ptr+=3)); // vel
     glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(Particle_T), (GLvoid*)(ptr+=3)); // size
-    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Particle_T), (GLvoid*)(ptr+=1)); // teme
+    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Particle_T), (GLvoid*)(ptr+=1)); // time
     glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(Particle_T), (GLvoid*)(ptr+=1)); // lifeTime
     glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(Particle_T), (GLvoid*)(ptr+=1)); // mass
-    glVertexAttribPointer(6, 3, GL_FLOAT, GL_FALSE, sizeof(Particle_T), (GLvoid*)(ptr+=1)); // mass
+    glVertexAttribPointer(6, 3, GL_FLOAT, GL_FALSE, sizeof(Particle_T), (GLvoid*)(ptr+=1)); // color
     glEnableVertexAttribArray( 0 );
     glEnableVertexAttribArray( 1 );
     glEnableVertexAttribArray( 2 );
@@ -82,7 +83,6 @@ void ParticleEmitter::createBuffer()
 void ParticleEmitter::create()
 {
     memset(mParticles, 0, sizeof(Particle));
-    memset(mTestParticles, 0, sizeof(Particle));
 
     mDeadParticles = &mParticles[0];
     mAliveParticles = nullptr;
@@ -118,6 +118,7 @@ void ParticleEmitter::update(float deltaTime)
 {
     Particle* p, *next;
     Particle* active, *tail;
+
     mTime += deltaTime;
 
     if (!mInitParticles)
@@ -133,7 +134,9 @@ void ParticleEmitter::update(float deltaTime)
         {
             p->next = mDeadParticles;
             mDeadParticles = p;
-            p->initialColor = vec3();
+            //p->initialColor = vec3();
+						p->initialTime = 0.0f;
+						p->lifeTime = -1.0f;
             count--;
             continue;
         }
@@ -170,7 +173,7 @@ void ParticleEmitter::render()
 
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
-    glBlendFunc(GL_ONE, GL_ONE);
+    glBlendFunc(GL_ONE, GL_ONE );
 
     renderer::Uniform<vec3>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "eyePos"), vec3(0.0f, 0.0f, 30.0f));
     tex->Set(glGetUniformLocation(shaderProgram->GetHandle(), "SpriteTex"), 0);
@@ -178,10 +181,8 @@ void ParticleEmitter::render()
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
     float* pData = static_cast<float*>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
-    //memcpy(pData, vertices, nVertices * sizeof(float) * 5);
     for (Particle* p = mAliveParticles; p; p = p->next)
     {
-        //memcpy(pData, p, sizeof(Particle_T));
         *(pData++)=p->initialPos.x;
         *(pData++)=p->initialPos.y;
         *(pData++)=p->initialPos.z;
@@ -189,6 +190,7 @@ void ParticleEmitter::render()
         *(pData++)=p->initialVelocity.y;
         *(pData++)=p->initialVelocity.z;
         *(pData++)=p->initialSize;
+				*(pData++)=p->initialTime;
         *(pData++)=p->lifeTime;
         *(pData++)=p->mass;
         *(pData++)=p->initialColor.x;
@@ -201,7 +203,6 @@ void ParticleEmitter::render()
     glDrawArrays(GL_POINTS, 0, count);
     glBindVertexArray(0);
 
-    glEnable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
 
 }

@@ -18,8 +18,8 @@
 
 namespace {
 
-constexpr int WIDTH = 600;
-constexpr int HEIGHT = 600;
+constexpr int WIDTH = 1280;
+constexpr int HEIGHT = 720;
 
 
 
@@ -59,7 +59,6 @@ public:
     {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glEnable(GL_DEPTH_TEST);
         particleEmitter->render();
     }
 
@@ -70,8 +69,8 @@ public:
             deltaTime = fmin(d, 1.0f / 60.0f);
             d -= deltaTime;
         }
-
         particleEmitter->update(deltaTime);
+
 
     }
     

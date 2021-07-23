@@ -19,17 +19,17 @@ uniform float gTime;
 out vData
 {
     float size;
-
+		vec3 color;
 }vertex;
 
-out vec3 fcolor;
 
-//out float Size2;
+
 
 void main()
 {
     float t = gTime - time;
     vec3 posL = position;
+		float pointSize = size;
 
     // Rotate the particles about local space.
     float sine = sin(0.5*mass*t);
@@ -38,18 +38,18 @@ void main()
     float y = posL.x*sine + posL.y*cosine;
     
     // Oscillate particles up and down.
-    float s = sin(6.0f*t);
+    float s = sin(6.0*t);
     posL.x = x;
     posL.y = y + mass*s;
     
     // Constant acceleration.
     posL = posL + velocity*t + 0.5f * gAccel * t * t;
 
-    vertex.size = size;
-    vertex.size += 8.0*t*t;
-    float d = distance(position, eyePos);
-    vertex.size = 600.0*size/(1.0 + 8.0 * d);
+		pointSize += 8.0 * t * t;
+    float d = distance(posL, eyePos);
+    vertex.size = 720.0*pointSize/(1.0 + 8.0 * d);
 
-    fcolor = color * (1.0f - (t / lifeTime));
+    vertex.color = vec3((1.0f - (t / lifeTime)));
+
     gl_Position = ModelViewMatrix * vec4(posL,1.0);
 }

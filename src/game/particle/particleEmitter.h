@@ -34,7 +34,6 @@ public:
         virtual void initParticle(Particle* out) = 0; 
 
 	Particle mParticles[MAX_PARTICLES];
-	Particle mTestParticles[MAX_PARTICLES];
 	Particle* mAliveParticles;
 	Particle* mDeadParticles;
 

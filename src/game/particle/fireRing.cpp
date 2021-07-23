@@ -16,7 +16,7 @@ void FireRing::initParticle(Particle* out)
 {
     out->initialTime = mTime;
     out->lifeTime = math::GetRandomFloat(2.0f, 4.0f);
-    out->initialSize = math::GetRandomFloat(10.0f, 15.0f);
+    out->initialSize = math::GetRandomFloat(1.0f, 4.0f);
     math::GetRandomVec(out->initialVelocity);
     out->mass = math::GetRandomFloat(1.0f, 2.0f);
     out->initialColor =math::WHITE * math::GetRandomFloat(0.5f, 1.0f);
