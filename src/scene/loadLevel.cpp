@@ -23,13 +23,12 @@ bool LoadLevelTextured(const char* filename)
             continue;
         }
 
-        stream_read(&stream, &entity->obj.textured, sizeof(entity->obj.textured));
-        if (entity->obj.textured)
-        {
+        //stream_read(&stream, &entity->obj.textured, sizeof(entity->obj.textured));
+
             char* tex1 = stream_read_str(&stream);
-            stream_read(&stream, &entity->obj.textured, sizeof(entity->obj.textured));
+            //stream_read(&stream, &entity->obj.textured, sizeof(entity->obj.textured));
             char* tex2 = stream_read_str(&stream);
-            stream_read(&stream, &entity->obj.textured, sizeof(entity->obj.textured));
+            //stream_read(&stream, &entity->obj.textured, sizeof(entity->obj.textured));
             char* tex3 = stream_read_str(&stream);
 
             //if  (tex1) entity->obj.diffuseMap = new Texture(tex1);
@@ -43,7 +42,7 @@ bool LoadLevelTextured(const char* filename)
             delete[] tex1;
             delete[] tex2;
             delete[] tex3;
-        }
+
 
 
         stream_read(&stream, &entity->obj.nIndices, sizeof(entity->obj.nIndices));
@@ -53,8 +52,8 @@ bool LoadLevelTextured(const char* filename)
         // it's actually num of element in array of vertices
 
         stream_read(&stream, &entity->obj.nVertices, sizeof(entity->obj.nVertices)); // it's actuall num of elements in
-        entity->obj.t_vertices = (texturedVertex*)calloc(entity->obj.nVertices, sizeof(texturedVertex)); // Each vertex has three floats (x, y, z)
-        stream_read(&stream, entity->obj.t_vertices, entity->obj.nVertices * sizeof(texturedVertex));
+        entity->obj.textured_vertices = (float*)calloc(entity->obj.nVertices, sizeof(float)); // Each vertex has three floats (x, y, z)
+        stream_read(&stream, entity->obj.textured_vertices, entity->obj.nVertices * sizeof(float));
 
     }
     return true;

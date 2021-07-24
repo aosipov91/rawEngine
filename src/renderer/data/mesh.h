@@ -16,7 +16,7 @@ Mesh*
 create_mesh_simple_vertex(const struct simpleVertex* vertices, int nVertices,
 	const unsigned int* indices, int nIndices);
 Mesh*
-create_textured_mesh(const struct texturedVertex* vertices, int nVertices, const unsigned int* indices, int nIndices);
+create_textured_mesh(const float* vertices, int nVertices, const unsigned int* indices, int nIndices);
 Mesh*
 create_mesh(const float* vertices, int nVertices,
             const unsigned int* indices,

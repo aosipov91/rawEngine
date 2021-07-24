@@ -60,11 +60,11 @@ public:
 
         levelShaderProgram = new renderer::Shader("../data/shaders/basic_vertex.glsl", "../data/shaders/basic_fragment.glsl");
         renderer = new renderer::Renderer();
-        LoadLevelTextured("../data/texturedMesh.geom");
+        LoadLevelTextured("../data/mesh.geom");
 
         for (int i = 0; i < entityCount; i++)
         {
-            renderer->drawTextured(entities[i]->obj.t_vertices, entities[i]->obj.nVertices, entities[i]->obj.indices, entities[i]->obj.nIndices);
+            renderer->drawTextured(entities[i]->obj.textured_vertices, entities[i]->obj.nVertices, entities[i]->obj.indices, entities[i]->obj.nIndices);
         }
 
 

@@ -44,7 +44,7 @@ create_mesh_simple_vertex(const struct simpleVertex* vertices, int nVertices,
 }
 
 Mesh*
-create_textured_mesh(const struct texturedVertex* vertices, int nVertices, const unsigned int* indices, int nIndices)
+create_textured_mesh(const float* vertices, int nVertices, const unsigned int* indices, int nIndices)
 {
     Mesh* mesh = NULL;
     GLuint vao;
@@ -57,7 +57,7 @@ create_textured_mesh(const struct texturedVertex* vertices, int nVertices, const
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-    glBufferData(GL_ARRAY_BUFFER, nVertices * sizeof(texturedVertex), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, nVertices * sizeof(float), vertices, GL_STATIC_DRAW);
 
     glGenBuffers(1, &ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
