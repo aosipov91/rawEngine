@@ -4,24 +4,24 @@ namespace game {
 namespace particle {
 
 ParticleEmitter::ParticleEmitter()
-	: count(0)
-	, mTime(0.0f)
-	, mTimePerParticle(0.0025f)
-	, shaderProgram(nullptr)
+    : count(0)
+    , mTime(0.0f)
+    , mTimePerParticle(0.0025f)
+    , shaderProgram(nullptr)
     , particleTexture(nullptr)
     , mViewportHeight(0.0f)
     , vao(0)
     , vbo(0)
 {
-	mParticles.resize(MAX_PARTICLES);
-	mAliveParticles.resize(MAX_PARTICLES);
-	mDeadParticles.resize(MAX_PARTICLES);
+    mParticles.resize(MAX_PARTICLES);
+    mAliveParticles.resize(MAX_PARTICLES);
+    mDeadParticles.resize(MAX_PARTICLES);
 
-	for(int i = 0; i < MAX_PARTICLES; ++i)
-	{
-		mParticles[i].lifeTime = -1.0f;	
-		mParticles[i].initialTime = 0.0f;
-	}
+    for(int i = 0; i < MAX_PARTICLES; ++i)
+    {
+        mParticles[i].lifeTime = -1.0f; 
+        mParticles[i].initialTime = 0.0f;
+    }
 
 
 }
@@ -39,14 +39,14 @@ ParticleEmitter::~ParticleEmitter()
 
 void ParticleEmitter::addParticle()
 {
-		if (!mDeadParticles.empty())
-		{
-		    Particle* p= mDeadParticles.back();
-			initParticle(*p);
+        if (!mDeadParticles.empty())
+        {
+            Particle* p= mDeadParticles.back();
+            initParticle(*p);
 
-			mDeadParticles.pop_back();
-			mAliveParticles.push_back(p);
-		}
+            mDeadParticles.pop_back();
+            mAliveParticles.push_back(p);
+        }
 }
 
 
@@ -100,33 +100,33 @@ void ParticleEmitter::update(float deltaTime)
 
 
     mDeadParticles.resize(0);
-	mAliveParticles.resize(0);
+    mAliveParticles.resize(0);
 
-	for (int i = 0; i < MAX_PARTICLES; ++i)
-	{
-		if ((mTime - mParticles[i].initialTime) > mParticles[i].lifeTime)
-		{
-	    	mDeadParticles.push_back(&mParticles[i]);
-		}
-		else
-		{
-			mAliveParticles.push_back(&mParticles[i]);
-		}
-	}
+    for (int i = 0; i < MAX_PARTICLES; ++i)
+    {
+        if ((mTime - mParticles[i].initialTime) > mParticles[i].lifeTime)
+        {
+            mDeadParticles.push_back(&mParticles[i]);
+        }
+        else
+        {
+            mAliveParticles.push_back(&mParticles[i]);
+        }
+    }
 
 
     // A negative or zero mTimePerParticle value denotes
     // not to emit any particles.
     if( mTimePerParticle > 0.0f )
     {
-            // Emit particles.
-            static float timeAccum = 0.0f;
-            timeAccum += deltaTime;
-            while( timeAccum >= mTimePerParticle )
-            {
-                    addParticle();
-                    timeAccum -= mTimePerParticle;
-            }
+        // Emit particles.
+        static float timeAccum = 0.0f;
+        timeAccum += deltaTime;
+        while( timeAccum >= mTimePerParticle )
+        {
+            addParticle();
+            timeAccum -= mTimePerParticle;
+        }
     }
 }
 
@@ -140,7 +140,6 @@ void ParticleEmitter::render()
     glBlendFunc(GL_ONE, GL_ONE );
 
     glUniform1f(glGetUniformLocation(shaderProgram->GetHandle(), "gTime"), mTime);
-    renderer::shader_uniform_3f(shaderProgram->GetHandle(), "eyePos", 0.0f, 0.0f, 20.0f);
     particleTexture->Set(glGetUniformLocation(shaderProgram->GetHandle(), "SpriteTex"), 0);
     glBindVertexArray(vao);
 
@@ -174,15 +173,17 @@ void ParticleEmitter::render()
 
 void ParticleEmitter::setProj(glm::mat4& proj) const
 {
-    shaderProgram->Bind();
     //renderer::Uniform<mat4>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "ProjectionMatrix"), proj);
     renderer::shader_uniform_mat4(shaderProgram->GetHandle(), "ProjectionMatrix", glm::value_ptr(proj));
 }
 void ParticleEmitter::setView(glm::mat4& view) const
 {
-    shaderProgram->Bind();
     //renderer::Uniform<mat4>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "ModelViewMatrix"), view);
     renderer::shader_uniform_mat4(shaderProgram->GetHandle(), "ModelViewMatrix", glm::value_ptr(view));
+}
+
+void ParticleEmitter::setEyePos(glm::vec3 &eyePos) const {
+    renderer::shader_uniform_3f(shaderProgram->GetHandle(), "eyePos", eyePos.x, eyePos.y, eyePos.z);
 }
 
 

@@ -30,11 +30,20 @@ ${PLATFORM_SOURCES}
 	"src/renderer/data/mesh.cpp"
 	"src/renderer/texture.h"
 	"src/renderer/texture.cpp"
+	"src/renderer/model.h"
+	"src/renderer/model.cpp"
+	"src/renderer/renderer.h"
+	"src/renderer/renderer.cpp"
 
+
+	"src/scene/loadLevel.h"
+	"src/scene/loadLevel.cpp"
 
 
 	"src/util/ddsLoader.h"
 	"src/util/ddsLoader.cpp"
+	"src/util/stream.h"
+	"src/util/stream.cpp"
 
 
 	"src/game/particle/particle.h"
@@ -48,6 +57,8 @@ ${PLATFORM_SOURCES}
 	"src/game/camera.cpp"
 	"src/game/player.h"
 	"src/game/player.cpp"
+	"src/game/entity.h"
+	"src/game/entity.cpp"
 
 )
 
