@@ -29,13 +29,12 @@ int stream_read(struct Stream* stream, void *data, int count)
 
 char* stream_read_str(struct Stream* stream)
 {
-    unsigned char len;
-    stream_read(stream, &len, 1);
+    int len;
+    stream_read(stream, &len, sizeof(int));
     if (len == 0)
         return NULL;
-    char *str = (char*)malloc(sizeof(len)+1); // TODO: free str?
+    char *str = new char[len + 1]; // TODO: free str?
     stream_read(stream, str, len);
-    free(str);
     str[len] = 0;
     return str;
 }

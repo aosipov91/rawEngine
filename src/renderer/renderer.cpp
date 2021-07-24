@@ -20,6 +20,10 @@ void Renderer::drawIndexed(const struct simpleVertex* vertices, int nVertices, c
 	batch[nMeshes++] = create_mesh_simple_vertex(vertices, nVertices,indices, nIndices);
 }
 
+void Renderer::drawTextured(const struct texturedVertex* vertices, int nVertices, const unsigned int*indices, int nIndices)
+{
+    batch[nMeshes++] = create_textured_mesh(vertices, nVertices,indices, nIndices);
+}
 
 
 }

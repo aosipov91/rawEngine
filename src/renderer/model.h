@@ -21,6 +21,10 @@ struct Model
     int   nVertices;
     unsigned int   *indices;
     struct simpleVertex* f_vertices;
+    struct texturedVertex* t_vertices;
+    float *textured_vertices;
+    int textured;
+
 };
 
 

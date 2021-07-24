@@ -72,9 +72,6 @@ if (MSVC)
 else()
 	target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} -lX11 -lm -lGLU -lXxf86vm)
     set (CMAKE_CXX_FLAGS "-g")
-		#target_compile_options(${PROJECT_NAME} PRIVATE -fpermissive)
-
-	#target_compile_options(${PROJECT_NAME} PRIVATE -O1 -fno-rtti -fno-exceptions -fno-inline-functions -Wall -Wextra -pedantic -Werror)
 endif()
     
 

@@ -60,11 +60,13 @@ public:
 
         levelShaderProgram = new renderer::Shader("../data/shaders/basic_vertex.glsl", "../data/shaders/basic_fragment.glsl");
         renderer = new renderer::Renderer();
-        LoadCollidableGeometry("../data/env.lvl");
+        LoadLevelTextured("../data/texturedMesh.geom");
+
         for (int i = 0; i < entityCount; i++)
         {
-            renderer->drawIndexed(entities[i]->obj.f_vertices, entities[i]->obj.nVertices, entities[i]->obj.indices, entities[i]->obj.nIndices);
+            renderer->drawTextured(entities[i]->obj.t_vertices, entities[i]->obj.nVertices, entities[i]->obj.indices, entities[i]->obj.nIndices);
         }
+
 
         particleEmitter = new game::particle::FireRing();
         particleEmitter->setWindowHeight((float)HEIGHT);
@@ -78,6 +80,7 @@ public:
     {
         glClearColor(.4f, 0.4f, 0.4f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         levelShaderProgram->Bind();
         renderer::shader_uniform_mat4(levelShaderProgram->GetHandle(), "uViewProjM", (const float*)&camera->mViewProj);
         for (int i = 0; i < entityCount; i++)
@@ -85,7 +88,8 @@ public:
             renderer::shader_uniform_mat4(levelShaderProgram->GetHandle(), "uModelM", (const float*)&entities[i]->obj.matrix);
             draw_mesh(renderer->batch[i]);
         }
-        particleEmitter->render();
+
+        //particleEmitter->render();
     }
 
 

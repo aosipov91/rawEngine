@@ -43,6 +43,47 @@ create_mesh_simple_vertex(const struct simpleVertex* vertices, int nVertices,
     return mesh;
 }
 
+Mesh*
+create_textured_mesh(const struct texturedVertex* vertices, int nVertices, const unsigned int* indices, int nIndices)
+{
+    Mesh* mesh = NULL;
+    GLuint vao;
+    GLuint vbo;
+    GLuint ebo;
+
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+    glBufferData(GL_ARRAY_BUFFER, nVertices * sizeof(texturedVertex), vertices, GL_STATIC_DRAW);
+
+    glGenBuffers(1, &ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, nIndices * sizeof(unsigned int), indices, GL_STATIC_DRAW);
+
+    float* ptr = 0;
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(texturedVertex) , (GLvoid*)(ptr += 0)); // position
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(texturedVertex),  (GLvoid*)(ptr += 3)); // normal
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(texturedVertex), (GLvoid*)(ptr += 3)); // texcoords
+
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+
+
+    glBindVertexArray(0);
+
+    mesh = (struct Mesh*)calloc(1, sizeof(struct Mesh));
+    mesh->vao = vao;
+    mesh->vbo = vbo;
+    mesh->ebo = ebo;
+    mesh->nIndices = nIndices;
+
+    return mesh;
+}
+
 
 Mesh*
 create_mesh(const float* vertices,
