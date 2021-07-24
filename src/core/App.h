@@ -49,10 +49,10 @@ public:
     virtual void keyPress(int) {}
     virtual void keyRelease(int) {}
 
-		bool isKeyPressed ( int keyCode ) const
-		{
-			return (keyCode >= 0 && keyCode < sizeof ( keys )) ? (keys [keyCode] != 0) : false;
-		}
+    bool isKeyPressed ( int keyCode ) const
+    {
+        return (keyCode >= 0 && keyCode < sizeof ( keys )) ? (keys [keyCode] != 0) : false;
+    }
 
     enum {
         KEY_ESC = 256,

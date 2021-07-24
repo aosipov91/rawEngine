@@ -64,6 +64,7 @@ private:
 
     renderer::Texture* particleTexture;
     renderer::Shader* shaderProgram;
+    unsigned int ptTexture;
 };
 
 }

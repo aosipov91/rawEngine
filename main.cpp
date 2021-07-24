@@ -17,6 +17,7 @@
 #include "src/util/ddsLoader.h"
 
 #include "src/scene/loadLevel.h"
+#include "src/libTexture/libTexture.h"
 
 
 namespace {
@@ -38,6 +39,9 @@ private:
     game::Player* player{};
     renderer::Renderer* renderer;
     renderer::Shader* levelShaderProgram;
+    renderer::Texture* texture;
+    unsigned int ddsTexture;
+    
 public:
     PSystem()
         : core::Application()
@@ -48,6 +52,7 @@ public:
         , particleEmitter(nullptr)
         , renderer(nullptr)
         , levelShaderProgram(nullptr)
+        , texture(nullptr)
     {
 
 
@@ -58,12 +63,20 @@ public:
         camera->pos.z = 20.0f;
         player = new game::Player();
 
+        
+        //ddsTexture = createTexture2D(true, "../data/textures/crete_beton_dirt_01.dds");
+        //ddsTexture = createTexture2D(false, "../data/textures/tile_walls_pink_01.dds");
+        //ddsTexture = createTexture2D(true, "../data/textures/crete_walls_01.dds");
+
         levelShaderProgram = new renderer::Shader("../data/shaders/basic_vertex.glsl", "../data/shaders/basic_fragment.glsl");
+        levelShaderProgram->Bind();
+        glUniform1i(glGetUniformLocation(levelShaderProgram->GetHandle(), "Sampler0"), 0);
         renderer = new renderer::Renderer();
         LoadLevelTextured("../data/mesh.geom");
 
         for (int i = 0; i < entityCount; i++)
         {
+
             renderer->drawTextured(entities[i]->obj.textured_vertices, entities[i]->obj.nVertices, entities[i]->obj.indices, entities[i]->obj.nIndices);
         }
 
@@ -80,16 +93,23 @@ public:
     {
         glClearColor(.4f, 0.4f, 0.4f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        //glFrontFace(GL_CW);
+        glEnable(GL_DEPTH_TEST);
 
         levelShaderProgram->Bind();
         renderer::shader_uniform_mat4(levelShaderProgram->GetHandle(), "uViewProjM", (const float*)&camera->mViewProj);
         for (int i = 0; i < entityCount; i++)
         {
+            //entities[i]->obj.diffuseMap->Set(glGetUniformLocation(levelShaderProgram->GetHandle(), "Sampler0"), 0);
+            //entities[i]->obj.specularMap->Set(glGetUniformLocation(levelShaderProgram->GetHandle(), "Sampler0"), 0);
+            //entities[i]->obj.normalMap->Set(glGetUniformLocation(levelShaderProgram->GetHandle(), "Sampler0"), 0);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, entities[i]->obj.diffuseMap);
             renderer::shader_uniform_mat4(levelShaderProgram->GetHandle(), "uModelM", (const float*)&entities[i]->obj.matrix);
             draw_mesh(renderer->batch[i]);
         }
 
-        //particleEmitter->render();
+       //particleEmitter->render();
     }
 
 
@@ -144,6 +164,7 @@ public:
         delete player;
         delete levelShaderProgram;
         delete renderer;
+        delete texture;
         ClearLevel();
     }
 };

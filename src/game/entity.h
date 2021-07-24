@@ -12,11 +12,11 @@ typedef struct entity_s
     struct Model obj;
 
     //Sphere s;
-		glm::vec3 pos;
-		glm::vec3 rot;
-		glm::vec3 velocity;
+    glm::vec3 pos;
+    glm::vec3 rot;
+    glm::vec3 velocity;
 
-		glm::mat4 mWorldTransform;
+    glm::mat4 mWorldTransform;
 } entity_t;
 
 extern entity_t* entities[MAX_ENTITIES];

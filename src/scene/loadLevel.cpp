@@ -2,6 +2,8 @@
 #include "src/util/stream.h"
 #include "src/renderer/data/mesh.h"
 #include "src/renderer/model.h"
+#include "src/renderer/texture.h"
+#include "src/libTexture/libTexture.h"
 
 #include "src/game/entity.h"
 
@@ -27,21 +29,18 @@ bool LoadLevelTextured(const char* filename)
 
             char* tex1 = stream_read_str(&stream);
             //stream_read(&stream, &entity->obj.textured, sizeof(entity->obj.textured));
-            char* tex2 = stream_read_str(&stream);
+           // char* tex2 = stream_read_str(&stream);
             //stream_read(&stream, &entity->obj.textured, sizeof(entity->obj.textured));
-            char* tex3 = stream_read_str(&stream);
+            //char* tex3 = stream_read_str(&stream);
 
-            //if  (tex1) entity->obj.diffuseMap = new Texture(tex1);
-            //if  (tex2) entity->obj.normalMap = new Texture(tex2);
-            //if  (tex3) entity->obj.specularMap = new Texture(tex3);
+            if  (tex1) entity->obj.diffuseMap = createTexture2D(false, tex1);
+            //if  (tex2) entity->obj.normalMap = createTexture2D(false, tex2);
+            //if  (tex3) entity->obj.specularMap = createTexture2D(false, tex3);
 
 
-            //free(tex1);
-            //free(tex2);
-            //free(tex3);
             delete[] tex1;
-            delete[] tex2;
-            delete[] tex3;
+            //delete[] tex2;
+            //delete[] tex3;
 
 
 

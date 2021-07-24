@@ -1,4 +1,5 @@
 #include "particleEmitter.h"
+#include "src/libTexture/libTexture.h"
 
 namespace game {
 namespace particle {
@@ -8,7 +9,6 @@ ParticleEmitter::ParticleEmitter()
     , mTime(0.0f)
     , mTimePerParticle(0.0025f)
     , shaderProgram(nullptr)
-    , particleTexture(nullptr)
     , mViewportHeight(0.0f)
     , vao(0)
     , vbo(0)
@@ -29,7 +29,6 @@ ParticleEmitter::ParticleEmitter()
 ParticleEmitter::~ParticleEmitter()
 {
     delete shaderProgram;
-    delete particleTexture;
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glDeleteBuffers(1, &vbo);
@@ -58,7 +57,8 @@ void ParticleEmitter::createBuffer()
                         "../data/shaders/particles/point_geom.glsl");
 
     shaderProgram->Bind();
-    particleTexture = new renderer::Texture("../data/textures/torch.dds");
+
+    ptTexture = createTexture2D(true, "../data/textures/torch.dds");
     //renderer::Uniform<int>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "SpriteTex"), 0);
     glUniform1i(glGetUniformLocation(shaderProgram->GetHandle(), "SpriteTex"), 0);
     //renderer::Uniform<float>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "Size2"), 0.5f);
@@ -140,7 +140,9 @@ void ParticleEmitter::render()
     glBlendFunc(GL_ONE, GL_ONE );
 
     glUniform1f(glGetUniformLocation(shaderProgram->GetHandle(), "gTime"), mTime);
-    particleTexture->Set(glGetUniformLocation(shaderProgram->GetHandle(), "SpriteTex"), 0);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, ptTexture);
     glBindVertexArray(vao);
 
     int numActiveParticles = 0;

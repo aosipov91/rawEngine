@@ -546,16 +546,19 @@ LRESULT CALLBACK windowProc(HWND window,UINT message,WPARAM wparam,LPARAM lparam
 			glApp->mWindowHeight = HIWORD(lparam);
 			glViewport(0,0,glApp->mWindowWidth,glApp->mWindowHeight);
 			break;
+                        // TODO: It's trash. Need to fix that
 		case WM_KEYDOWN: {
-				int key = translateKey((int)wparam);
-				glApp->keys[key] = 1;
-				glApp->keyPress(key);
+				//int key = translateKey((int)wparam);
+                                glApp->keys[wparam] = message != WM_KEYUP;
+				//glApp->keys[key] = 1;
+				//glApp->keyPress(key);
 			}
 			break;
 		case WM_KEYUP: {
-				int key = translateKey((int)wparam);
-				glApp->keys[key] = 0;
-				glApp->keyRelease(key);
+				//int key = translateKey((int)wparam);
+                                glApp->keys[wparam] = message != WM_KEYUP;
+				//glApp->keys[key] = 0;
+				//glApp->keyRelease(key);
 			}
 			break;
 		case WM_CLOSE:

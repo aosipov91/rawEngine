@@ -7,6 +7,9 @@ void model_init(struct Model *model)
     model->t_vertices = nullptr;
     model->textured = 0;
     model->textured_vertices = nullptr;
+    model->diffuseMap = 0;
+    model->specularMap = 0;
+    model->normalMap = 0;
 
 }
 

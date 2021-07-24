@@ -72,7 +72,12 @@ GLuint loadDDS(const char * imagepath){
 	glBindTexture(GL_TEXTURE_2D, textureID);
 	glPixelStorei(GL_UNPACK_ALIGNMENT,1);	
 	
-    unsigned int blockSize = (format == GL_COMPRESSED_RGBA_ASTC_10x8_KHR) ? 8 : 16;
+        unsigned int blockSize;
+        if( format == GL_COMPRESSED_RGB_S3TC_DXT1_EXT || format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT )
+            blockSize = 8;
+        else
+            blockSize = 16;
+    //unsigned int blockSize = (format == GL_COMPRESSED_RGBA_ASTC_10x8_KHR) ? 8 : 16;
 	unsigned int offset = 0;
 
 	/* load the mipmaps */ 

@@ -60,6 +60,20 @@ ${PLATFORM_SOURCES}
 	"src/game/entity.h"
 	"src/game/entity.cpp"
 
+        "src/libTexture/typeDefs.h"
+        "src/libTexture/data.h"
+        "src/libTexture/data.cpp"
+        "src/libTexture/texture.h"
+        "src/libTexture/texture.cpp"
+        "src/libTexture/compressedTexture.h"
+        "src/libTexture/compressedTexture.cpp"
+        "src/libTexture/ddsDefs.h"
+        "src/libTexture/ddsLoader.h"
+        "src/libTexture/ddsLoader.cpp"
+        "src/libTexture/textureLoader.h"
+        "src/libTexture/libTexture.h"
+        "src/libTexture/libTexture.cpp"
+
 )
 
 include_directories("libs/")

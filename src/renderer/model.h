@@ -25,6 +25,10 @@ struct Model
     float *textured_vertices;
     int textured;
 
+    unsigned int diffuseMap;
+    unsigned int specularMap;
+    unsigned int normalMap;
+
 };
 
 

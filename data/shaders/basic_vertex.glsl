@@ -18,6 +18,7 @@ uniform mat4 uNormalMatrix;
 
 out vec3 n;
 out vec3 p;
+out vec2 uv;
 
 void main()
 {
@@ -25,5 +26,6 @@ void main()
     // p = position;
     //n = normalize(vec3(uNormalMatrix * vec4(normal, 0.0f)));
      n = normalize(normal);
+     uv = texcoord;
     gl_Position = uViewProjM * uModelM * vec4(position, 1.0f);
 }
