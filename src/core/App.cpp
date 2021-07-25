@@ -1,8 +1,8 @@
 #include "App.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstdarg>
+#include <cstring>
 
 #include "src/core/timer.h"
 
@@ -487,7 +487,7 @@ Application::~Application() {
 		ReleaseDC(window,hdc);
 		DestroyWindow(window);
 		if(mFullScreen) {
-			ChangeDisplaySettings(NULL,0);
+			ChangeDisplaySettings(nullptr,0);
 			ShowCursor(true);
 		}
 	}
@@ -689,9 +689,9 @@ bool Application::setVideoMode(int w,int h,bool fs) {
         0,
     };
 
-    context = wglCreateContextAttribsARB(hdc, 0, attribList);
+    context = wglCreateContextAttribsARB(hdc, nullptr, attribList);
 
-    wglMakeCurrent(NULL, NULL);
+    wglMakeCurrent(nullptr, nullptr);
     wglDeleteContext(tempRC);
     wglMakeCurrent(hdc, context);
 

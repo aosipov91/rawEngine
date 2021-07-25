@@ -14,8 +14,6 @@
 #include "src/game/player.h"
 #include "src/game/entity.h"
 
-#include "src/util/ddsLoader.h"
-
 #include "src/scene/loadLevel.h"
 #include "src/libTexture/libTexture.h"
 
@@ -85,10 +83,49 @@ public:
 
         //addParticleObject();
 
+        createFBO();
 
-        ddsTexture1 = createTexture2D(true, "../data/textures/crete_beton_dirt_01.dds");
-        ddsTexture2 = createTexture2D(true, "../data/textures/crete_walls_01.dds");
-        ddsTexture3 = createTexture2D(false, "../data/textures/tile_walls_pink_01.dds");
+        return true;
+    }
+    bool createFBO()
+    {
+        GLuint fbo;
+        GLuint depthTexture;
+        glGenFramebuffers(1, &fbo);
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+        glGenTextures(1, &depthTexture);
+        glBindTexture(GL_TEXTURE_2D, depthTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, WIDTH, HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture, 0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        // create render target
+        GLuint renderTarget;
+        glGenTextures(1, &renderTarget);
+        glBindTexture(GL_TEXTURE_2D, renderTarget);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+        glTexImage2D(
+                GL_TEXTURE_2D, 0, GL_RGBA, WIDTH, HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr
+        );
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, renderTarget, 0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        {
+            printf("Framebuffer not complete\n");
+            return false;
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         return true;
     }
     void render() final
@@ -97,7 +134,7 @@ public:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         //glFrontFace(GL_CW);
         glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE);
+        //glEnable(GL_CULL_FACE);
 
         levelShaderProgram->Bind();
         renderer::shader_uniform_mat4(levelShaderProgram->GetHandle(), "uViewProjM", (const float*)&camera->mViewProj);
