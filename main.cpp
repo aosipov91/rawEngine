@@ -99,6 +99,7 @@ public:
 
         levelShaderProgram->Bind();
         renderer::shader_uniform_mat4(levelShaderProgram->GetHandle(), "uViewProjM", (const float*)&camera->mViewProj);
+        /*
         for (int i = 0; i < entityCount; i++)
         {
             //entities[i]->obj.diffuseMap->Set(glGetUniformLocation(levelShaderProgram->GetHandle(), "Sampler0"), 0);
@@ -109,6 +110,21 @@ public:
             renderer::shader_uniform_mat4(levelShaderProgram->GetHandle(), "uModelM", (const float*)&entities[i]->obj.matrix);
             draw_mesh(renderer->batch[i]);
         }
+*/
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, entities[0]->obj.diffuseMap);
+        renderer::shader_uniform_mat4(levelShaderProgram->GetHandle(), "uModelM", (const float*)&entities[0]->obj.matrix);
+        draw_mesh(renderer->batch[0]);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, entities[1]->obj.diffuseMap);
+        renderer::shader_uniform_mat4(levelShaderProgram->GetHandle(), "uModelM", (const float*)&entities[1]->obj.matrix);
+        draw_mesh(renderer->batch[1]);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, entities[1]->obj.diffuseMap);
+        renderer::shader_uniform_mat4(levelShaderProgram->GetHandle(), "uModelM", (const float*)&entities[2]->obj.matrix);
+        draw_mesh(renderer->batch[2]);
 
        //particleEmitter->render();
     }
