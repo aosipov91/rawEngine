@@ -40,7 +40,9 @@ private:
     renderer::Renderer* renderer;
     renderer::Shader* levelShaderProgram;
     renderer::Texture* texture;
-    unsigned int ddsTexture;
+    unsigned int ddsTexture1;
+    unsigned int ddsTexture2;
+    unsigned int ddsTexture3;
     
 public:
     PSystem()
@@ -81,12 +83,12 @@ public:
         }
 
 
-        particleEmitter = new game::particle::FireRing();
-        particleEmitter->setWindowHeight((float)HEIGHT);
-        particleEmitter->createBuffer();
 
 
 
+        ddsTexture1 = createTexture2D(true, "../data/textures/crete_beton_dirt_01.dds");
+        ddsTexture2 = createTexture2D(true, "../data/textures/crete_walls_01.dds");
+        ddsTexture3 = createTexture2D(false, "../data/textures/tile_walls_pink_01.dds");
         return true;
     }
     void render() final
@@ -95,48 +97,51 @@ public:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         //glFrontFace(GL_CW);
         glEnable(GL_DEPTH_TEST);
-        //glDisable(GL_CULL_FACE);
+        glEnable(GL_CULL_FACE);
 
         levelShaderProgram->Bind();
         renderer::shader_uniform_mat4(levelShaderProgram->GetHandle(), "uViewProjM", (const float*)&camera->mViewProj);
-        /*
-        for (int i = 0; i < entityCount; i++)
-        {
+
+        for (int i = (entityCount-1); i >=0; i--) {
             //entities[i]->obj.diffuseMap->Set(glGetUniformLocation(levelShaderProgram->GetHandle(), "Sampler0"), 0);
             //entities[i]->obj.specularMap->Set(glGetUniformLocation(levelShaderProgram->GetHandle(), "Sampler0"), 0);
             //entities[i]->obj.normalMap->Set(glGetUniformLocation(levelShaderProgram->GetHandle(), "Sampler0"), 0);
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, entities[i]->obj.diffuseMap);
-            renderer::shader_uniform_mat4(levelShaderProgram->GetHandle(), "uModelM", (const float*)&entities[i]->obj.matrix);
+            renderer::shader_uniform_mat4(levelShaderProgram->GetHandle(), "uModelM",
+                                          (const float *) &entities[i]->obj.matrix);
             draw_mesh(renderer->batch[i]);
         }
-*/
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, entities[0]->obj.diffuseMap);
-        renderer::shader_uniform_mat4(levelShaderProgram->GetHandle(), "uModelM", (const float*)&entities[0]->obj.matrix);
-        draw_mesh(renderer->batch[0]);
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, entities[1]->obj.diffuseMap);
-        renderer::shader_uniform_mat4(levelShaderProgram->GetHandle(), "uModelM", (const float*)&entities[1]->obj.matrix);
-        draw_mesh(renderer->batch[1]);
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, entities[1]->obj.diffuseMap);
-        renderer::shader_uniform_mat4(levelShaderProgram->GetHandle(), "uModelM", (const float*)&entities[2]->obj.matrix);
-        draw_mesh(renderer->batch[2]);
 
-       //particleEmitter->render();
+
+
+
+
+        //particleEmitter->render();
     }
 
+    void addParticleObject()
+    {
+        particleEmitter = new game::particle::FireRing();
+        particleEmitter->setWindowHeight((float)HEIGHT);
+        particleEmitter->createBuffer();
+    }
 
-    void update(float deltaTime)
+    void particleObjectUpdate(float deltaTime)
     {
         particleEmitter->update(deltaTime);
         particleEmitter->setProj(camera->mProj);
         particleEmitter->setView(camera->mView);
         particleEmitter->setEyePos(camera->pos);
+    }
 
+
+    void update(float deltaTime)
+    {
+
+        //particleObjectUpdate(deltaTime);
         player->rot.y = mouseDelta.y * 0.001f;
         player->rot.x = mouseDelta.x * 0.001f;
         player->rot.x = glm::clamp(player->rot.x, -glm::half_pi<float>(), +glm::half_pi<float>());

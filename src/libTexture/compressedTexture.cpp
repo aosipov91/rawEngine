@@ -25,12 +25,12 @@ CompressedTexture :: CompressedTexture ( int theWidth, int theHeight, int theNum
 
 bool    CompressedTexture :: upload ( int target, bool mipmap )
 {
-    int w    = width;
-    int h    = height;
-    int offs = 0;
-    int blockSize;
-    int size;
-    int	l    = levels;
+    int32_t w    = width;
+    int32_t h    = height;
+    int32_t offs = 0;
+    int32_t blockSize;
+    int32_t size;
+    int32_t	l    = levels;
 
     if ( !mipmap )
     	l = 1;

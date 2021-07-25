@@ -24,20 +24,23 @@ unsigned    createTexture2D ( bool mipmap, const char * fileName )
     return textureId;
 }
 
-bool    loadTexture ( int target, bool mipmap, const char * fileName )
+bool    loadTexture ( int target, bool mipmap, const char * fileName )
+
 {
-    DdsLoader* mDdsLoader = new DdsLoader;
+    auto* mDdsLoader = new DdsLoader;
     Texture* texture = mDdsLoader->load(new Data(fileName));
 
-    if ( texture == NULL )
+    if ( texture == nullptr )
         return false;
 
-    texture -> upload ( target, mipmap );
+    texture -> upload ( target, mipmap );
 
-    if ( mipmap )
-        glTexParameteri ( target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
-    else
+
+    if ( mipmap ) {
+        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    } else {
         glTexParameteri ( target, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    }
 
     delete texture;
     delete mDdsLoader;

@@ -20,13 +20,13 @@ using namespace std;
 class	Data
 {
 	byte  * bits;
-	int		length;
-	int		pos;
+    int32_t		length;
+    int32_t		pos;
 	string	file;						// when data loaded from file, contains it's name
 
 public:
 	Data ( const char * fileName );
-	Data ( void * ptr, int len );
+	Data ( void * ptr, int32_t len );
 
 	bool	isOk () const;
 
@@ -40,17 +40,17 @@ public:
 		return pos >= length;
 	}
 
-	int	getLength () const
+    int32_t	getLength () const
 	{
 		return length;
 	}
 
-	int	getPos () const
+    int32_t	getPos () const
 	{
 		return pos;
 	}
 
-	int	getByte ()
+    int32_t	getByte ()
 	{
 		if ( pos < length )
 			return bits [pos++];
@@ -163,7 +163,7 @@ public:
 		return pos;
 	}
 
-	int		getBytes  ( void * ptr, int len );
+	int		getBytes  ( void * ptr, int32_t len );
 	bool	getString ( string& str, char term );				// get a string with given terminator
 };
 
