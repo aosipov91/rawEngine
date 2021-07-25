@@ -6,6 +6,7 @@
 #define	__COMPRESSED_TEXTURE__
 
 #include	"texture.h"
+#include <cstdint>
 
 class	CompressedTexture : public Texture
 {

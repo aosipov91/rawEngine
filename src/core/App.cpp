@@ -676,24 +676,24 @@ bool Application::setVideoMode(int w,int h,bool fs) {
 		if(!(pixelformat = ChoosePixelFormat(hdc,&pfd))) throw("ChoosePixelFormat() fail");
 		if(!(SetPixelFormat(hdc,pixelformat,&pfd))) throw("SetPixelFormat() fail");
 
-        HGLRC tempRC = wglCreateContext(hdc);
-        wglMakeCurrent(hdc, tempRC);
-        PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = NULL;
-        wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
+    HGLRC tempRC = wglCreateContext(hdc);
+    wglMakeCurrent(hdc, tempRC);
+    PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = NULL;
+    wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
 
-        const int attribList[] = {
-            WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
-            WGL_CONTEXT_MINOR_VERSION_ARB, 3,
-            WGL_CONTEXT_FLAGS_ARB, 0,
-            WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
-            0,
-        };
+    const int attribList[] = {
+        WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
+        WGL_CONTEXT_MINOR_VERSION_ARB, 3,
+        WGL_CONTEXT_FLAGS_ARB, 0,
+        WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+        0,
+    };
 
-        HGLRC hglrc = wglCreateContextAttribsARB(hdc, 0, attribList);
+    context = wglCreateContextAttribsARB(hdc, 0, attribList);
 
-        wglMakeCurrent(NULL, NULL);
-        wglDeleteContext(tempRC);
-        wglMakeCurrent(hdc, hglrc);
+    wglMakeCurrent(NULL, NULL);
+    wglDeleteContext(tempRC);
+    wglMakeCurrent(hdc, context);
 
         init_opengl_extensions();
 
