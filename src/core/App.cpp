@@ -668,17 +668,32 @@ bool Application::setVideoMode(int w,int h,bool fs) {
 			mWindowWidth = windowRect.right - windowRect.left;
 			mWindowHeight = windowRect.bottom - windowRect.top;
 			window = CreateWindowEx(0,"Application","GLApp",WS_OVERLAPPEDWINDOW,CW_USEDEFAULT,CW_USEDEFAULT,mWindowWidth,mWindowHeight,NULL,NULL,hInstance,NULL);
-		}
+        }
 		
 		if(!window) throw("CreateWindowEx() fail");
 		if(!(hdc = GetDC(window))) throw("GetDC() fail");
 		
 		if(!(pixelformat = ChoosePixelFormat(hdc,&pfd))) throw("ChoosePixelFormat() fail");
 		if(!(SetPixelFormat(hdc,pixelformat,&pfd))) throw("SetPixelFormat() fail");
-		
-		if(!context) context = wglCreateContext(hdc);
-		if(!context) throw("wglCreateContext() fail");
-		if(!wglMakeCurrent(hdc,context)) throw("wglMakeCurrent() fail");
+
+        HGLRC tempRC = wglCreateContext(hdc);
+        wglMakeCurrent(hdc, tempRC);
+        PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = NULL;
+        wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
+
+        const int attribList[] = {
+            WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
+            WGL_CONTEXT_MINOR_VERSION_ARB, 3,
+            WGL_CONTEXT_FLAGS_ARB, 0,
+            WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+            0,
+        };
+
+        HGLRC hglrc = wglCreateContextAttribsARB(hdc, 0, attribList);
+
+        wglMakeCurrent(NULL, NULL);
+        wglDeleteContext(tempRC);
+        wglMakeCurrent(hdc, hglrc);
 
         init_opengl_extensions();
 

@@ -5,7 +5,6 @@
 #include "src/renderer/opengl/openGLExtensions.h"
 #include "particle.h"
 
-#include "src/math/mat4.h"
 
 namespace game {
 namespace particle {
@@ -35,9 +34,6 @@ public:
     GLuint particles_buffer;
     int LastUsedParticle;
 
-    vec3 CameraPosition;
-    mat4 view;
-    mat4 proj;
 
 };
 

@@ -27,7 +27,7 @@ constexpr int HEIGHT = 720;
 
 
 
-class PSystem : public core::Application
+class MainApp : public core::Application
 {
 private:
     float deltaTime;
@@ -45,7 +45,7 @@ private:
     unsigned int ddsTexture3;
     
 public:
-    PSystem()
+    MainApp()
         : core::Application()
         , deltaTime(0.0f)
         , view()
@@ -83,7 +83,7 @@ public:
         }
 
 
-
+        //addParticleObject();
 
 
         ddsTexture1 = createTexture2D(true, "../data/textures/crete_beton_dirt_01.dds");
@@ -102,7 +102,7 @@ public:
         levelShaderProgram->Bind();
         renderer::shader_uniform_mat4(levelShaderProgram->GetHandle(), "uViewProjM", (const float*)&camera->mViewProj);
 
-        for (int i = (entityCount-1); i >=0; i--) {
+        for (int i = 0; i < entityCount; i++) {
             //entities[i]->obj.diffuseMap->Set(glGetUniformLocation(levelShaderProgram->GetHandle(), "Sampler0"), 0);
             //entities[i]->obj.specularMap->Set(glGetUniformLocation(levelShaderProgram->GetHandle(), "Sampler0"), 0);
             //entities[i]->obj.normalMap->Set(glGetUniformLocation(levelShaderProgram->GetHandle(), "Sampler0"), 0);
@@ -112,12 +112,6 @@ public:
                                           (const float *) &entities[i]->obj.matrix);
             draw_mesh(renderer->batch[i]);
         }
-
-
-
-
-
-
 
         //particleEmitter->render();
     }
@@ -179,7 +173,7 @@ public:
         }
     }
     
-    ~PSystem() override
+    ~MainApp() override
     {
         delete particleEmitter;
         delete camera;
@@ -195,7 +189,7 @@ public:
 
 int main(int argc,char **argv)
 {
-    auto *glApp = new PSystem();
+    auto *mainApp = new MainApp();
     
     int w = WIDTH;
     int h = HEIGHT;
@@ -216,19 +210,19 @@ int main(int argc,char **argv)
         }
     }
     
-    if(!glApp->setVideoMode(w,h,fs))
+    if(!mainApp->setVideoMode(w,h,fs))
     {
         return EXIT_FAILURE;
     }
     
-    glApp->setTitle("3D Engine demo v0.1");
+    mainApp->setTitle("3D Engine demo v0.1");
 
-    glApp->init();
+    mainApp->init();
 
-    glApp->main();
+    mainApp->main();
     
     //Engine::clear();
-    delete glApp;
+    delete mainApp;
 
     return EXIT_SUCCESS;
 }

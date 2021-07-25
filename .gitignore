@@ -4,4 +4,5 @@ build/
 *.swp
 *.txt
 !CMakeLists.txt
+CMakeLists.txt.user
 .idea/

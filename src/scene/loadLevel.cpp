@@ -33,7 +33,7 @@ bool LoadLevelTextured(const char* filename)
             //stream_read(&stream, &entity->obj.textured, sizeof(entity->obj.textured));
             //char* tex3 = stream_read_str(&stream);
 
-            if  (tex1) entity->obj.diffuseMap = createTexture2D(true, tex1);
+            if  (tex1) entity->obj.diffuseMap = createTexture2D(false, tex1);
             //if  (tex2) entity->obj.normalMap = createTexture2D(false, tex2);
             //if  (tex3) entity->obj.specularMap = createTexture2D(false, tex3);
 

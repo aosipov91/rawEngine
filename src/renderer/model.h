@@ -6,7 +6,6 @@
 #include <glm/matrix.hpp>
 #include "src/renderer/data/mesh.h"
 #include "src/renderer/texture.h"
-
 enum Type {
     MESH,
     LAMP,
@@ -25,9 +24,9 @@ struct Model
     float *textured_vertices;
     int textured;
 
-    u_int32_t diffuseMap;
-    u_int32_t specularMap;
-    u_int32_t normalMap;
+    uint32_t diffuseMap;
+    uint32_t specularMap;
+    uint32_t normalMap;
 
 };
 

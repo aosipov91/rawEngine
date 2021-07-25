@@ -14,7 +14,6 @@ ParticleSystem::ParticleSystem()
     : shaderProgram(0)
     , texture(0)
     , LastUsedParticle(0)
-    , CameraPosition(0.0f, 0.0f, 4.0f)
 {
 
 }
