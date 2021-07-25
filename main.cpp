@@ -95,6 +95,7 @@ public:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         //glFrontFace(GL_CW);
         glEnable(GL_DEPTH_TEST);
+        glDisable(GL_CULL_FACE);
 
         levelShaderProgram->Bind();
         renderer::shader_uniform_mat4(levelShaderProgram->GetHandle(), "uViewProjM", (const float*)&camera->mViewProj);
@@ -109,7 +110,7 @@ public:
             draw_mesh(renderer->batch[i]);
         }
 
-       //particleEmitter->render();
+       particleEmitter->render();
     }
 
 

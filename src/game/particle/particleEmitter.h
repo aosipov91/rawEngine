@@ -21,8 +21,8 @@ public:
 	ParticleEmitter();
 	virtual ~ParticleEmitter();
 
-	void update(float deltaTime);
-	void render();
+	virtual void update(float deltaTime);
+	virtual void render();
 	void createBuffer();
     void setProj(glm::mat4& proj) const;
     void setView(glm::mat4& view) const;
