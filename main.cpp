@@ -15,7 +15,6 @@
 #include "src/game/entity.h"
 
 #include "src/scene/loadLevel.h"
-#include "src/libTexture/libTexture.h"
 
 
 namespace {
@@ -30,29 +29,27 @@ class MainApp : public core::Application
 private:
     float deltaTime;
     glm::mat4 proj;
-    glm::mat4 view;
     glm::mat4 model;
     game::particle::FireRing *particleEmitter;
     Camera* camera{};
     game::Player* player{};
     renderer::Renderer* renderer;
-    renderer::Shader* levelShaderProgram;
-    renderer::Texture* texture;
-    unsigned int ddsTexture1;
-    unsigned int ddsTexture2;
-    unsigned int ddsTexture3;
-    
+    renderer::Shader levelShaderProgram;
+    renderer::Shader fullScreenShaderProgram;
+
+    GLuint fbo{};
+    GLuint renderTarget{};
+    GLuint quad_vao{};
 public:
     MainApp()
         : core::Application()
         , deltaTime(0.0f)
-        , view()
         , proj()
         , model()
         , particleEmitter(nullptr)
         , renderer(nullptr)
-        , levelShaderProgram(nullptr)
-        , texture(nullptr)
+        , levelShaderProgram()
+        , fullScreenShaderProgram()
     {
 
 
@@ -68,9 +65,9 @@ public:
         //ddsTexture = createTexture2D(false, "../data/textures/tile_walls_pink_01.dds");
         //ddsTexture = createTexture2D(true, "../data/textures/crete_walls_01.dds");
 
-        levelShaderProgram = new renderer::Shader("../data/shaders/basic_vertex.glsl", "../data/shaders/basic_fragment.glsl");
-        levelShaderProgram->Bind();
-        glUniform1i(glGetUniformLocation(levelShaderProgram->GetHandle(), "Sampler0"), 0);
+        levelShaderProgram = renderer::Shader("../data/shaders/basic_vertex.glsl", "../data/shaders/basic_fragment.glsl");
+        levelShaderProgram.Bind();
+        glUniform1i(glGetUniformLocation(levelShaderProgram.GetHandle(), "Sampler0"), 0);
         renderer = new renderer::Renderer();
         LoadLevelTextured("../data/mesh.geom");
 
@@ -81,15 +78,53 @@ public:
         }
 
 
+
+
         //addParticleObject();
 
+        fullScreenShaderProgram = renderer::Shader("../data/shaders/fullscreen_vertex.glsl", "../data/shaders/fullscreen_fragment.glsl");
+        fullScreenShaderProgram.Bind();
+        glUniform1i(glGetUniformLocation(fullScreenShaderProgram.GetHandle(), "PositionTex"), 0);
+        createQuadVao();
         createFBO();
 
         return true;
     }
+    bool createQuadVao()
+    {
+        GLfloat verts[] = {
+                -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+                -1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 0.0f
+        };
+        GLfloat tc[] = {
+                0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+                0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f
+        };
+        GLuint quad_vbo[2];
+        glGenBuffers(2, quad_vbo);
+
+        glBindBuffer(GL_ARRAY_BUFFER, quad_vbo[0]);
+        glBufferData(GL_ARRAY_BUFFER, 6 * 3 * sizeof(float), verts, GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ARRAY_BUFFER, quad_vbo[1]);
+        glBufferData(GL_ARRAY_BUFFER, 6 * 2 * sizeof(float), tc, GL_STATIC_DRAW);
+
+        glGenVertexArrays(1, &quad_vao);
+        glBindVertexArray(quad_vao);
+
+        glBindBuffer(GL_ARRAY_BUFFER, quad_vbo[0]);
+        glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+        glEnableVertexAttribArray(0);
+
+        glBindBuffer(GL_ARRAY_BUFFER, quad_vbo[1]);
+        glVertexAttribPointer((GLuint)1, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+        glEnableVertexAttribArray(1);
+
+        glBindVertexArray(0);
+        return true;
+    }
     bool createFBO()
     {
-        GLuint fbo;
         GLuint depthTexture;
         glGenFramebuffers(1, &fbo);
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
@@ -105,7 +140,6 @@ public:
         glBindTexture(GL_TEXTURE_2D, 0);
 
         // create render target
-        GLuint renderTarget;
         glGenTextures(1, &renderTarget);
         glBindTexture(GL_TEXTURE_2D, renderTarget);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -114,9 +148,8 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
         glTexImage2D(
-                GL_TEXTURE_2D, 0, GL_RGBA, WIDTH, HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr
+                GL_TEXTURE_2D, 0, GL_RGB, WIDTH, HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr
         );
-        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, renderTarget, 0);
         glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -125,19 +158,28 @@ public:
             printf("Framebuffer not complete\n");
             return false;
         }
+        GLuint buffers[1] = {GL_COLOR_ATTACHMENT0};
+        glDrawBuffers(1, buffers);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         return true;
     }
     void render() final
     {
+        glViewport(0, 0, WIDTH, HEIGHT);
+        glEnable(GL_DEPTH_TEST);
         glClearColor(.4f, 0.4f, 0.4f, 1.0f);
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         //glFrontFace(GL_CW);
-        glEnable(GL_DEPTH_TEST);
+
         //glEnable(GL_CULL_FACE);
 
-        levelShaderProgram->Bind();
-        renderer::shader_uniform_mat4(levelShaderProgram->GetHandle(), "uViewProjM", (const float*)&camera->mViewProj);
+
+
+
+
+        levelShaderProgram.Bind();
+        renderer::shader_uniform_mat4(levelShaderProgram.GetHandle(), "uViewProjM", (const float*)&camera->mViewProj);
 
         for (int i = 0; i < entityCount; i++) {
             //entities[i]->obj.diffuseMap->Set(glGetUniformLocation(levelShaderProgram->GetHandle(), "Sampler0"), 0);
@@ -145,10 +187,21 @@ public:
             //entities[i]->obj.normalMap->Set(glGetUniformLocation(levelShaderProgram->GetHandle(), "Sampler0"), 0);
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, entities[i]->obj.diffuseMap);
-            renderer::shader_uniform_mat4(levelShaderProgram->GetHandle(), "uModelM",
+            renderer::shader_uniform_mat4(levelShaderProgram.GetHandle(), "uModelM",
                                           (const float *) &entities[i]->obj.matrix);
             draw_mesh(renderer->batch[i]);
         }
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        fullScreenShaderProgram.Bind();
+        // final render to default color buffer
+        glDisable(GL_DEPTH_TEST);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, renderTarget);
+        glBindVertexArray(quad_vao);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindVertexArray(0);
 
         //particleEmitter->render();
     }
@@ -212,12 +265,11 @@ public:
     
     ~MainApp() override
     {
+        //delete fullScreenShaderProgram;
         delete particleEmitter;
         delete camera;
         delete player;
-        delete levelShaderProgram;
         delete renderer;
-        delete texture;
         ClearLevel();
     }
 };
