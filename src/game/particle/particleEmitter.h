@@ -12,6 +12,8 @@
 #include "src/renderer/texture.h"
 #include "src/renderer/shader.h"
 
+#include "src/util/recyclingArray.h"
+
 namespace game {
 namespace particle {
 
@@ -62,9 +64,10 @@ private:
     std::vector<Particle*> mAliveParticles;
     std::vector<Particle*> mDeadParticles;
 
-    renderer::Texture* particleTexture;
     renderer::Shader* shaderProgram;
     unsigned int ptTexture;
+
+    CRecyclingArray<CParticle, MAX_PARTICLES> particleList;
 };
 
 }

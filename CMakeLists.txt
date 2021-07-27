@@ -44,6 +44,8 @@ ${PLATFORM_SOURCES}
 	"src/util/ddsLoader.cpp"
 	"src/util/stream.h"
 	"src/util/stream.cpp"
+        "src/util/recyclingArray.h"
+
 
 
 	"src/game/particle/particle.h"

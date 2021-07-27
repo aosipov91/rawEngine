@@ -30,10 +30,10 @@ private:
     float deltaTime;
     glm::mat4 proj;
     glm::mat4 model;
-    game::particle::FireRing *particleEmitter;
-    Camera* camera{};
-    game::Player* player{};
-    renderer::Renderer* renderer;
+    game::particle::FireRing particleEmitter;
+    Camera camera{};
+    game::Player player{};
+    renderer::Renderer renderer;
     renderer::Shader levelShaderProgram;
     renderer::Shader fullScreenShaderProgram;
 
@@ -46,8 +46,8 @@ public:
         , deltaTime(0.0f)
         , proj()
         , model()
-        , particleEmitter(nullptr)
-        , renderer(nullptr)
+        , particleEmitter()
+        , renderer()
         , levelShaderProgram()
         , fullScreenShaderProgram()
     {
@@ -56,9 +56,9 @@ public:
     }
     bool init() {
         float aspect = (float)WIDTH/(float)HEIGHT;
-        camera = new Camera(aspect);
-        camera->pos.z = 20.0f;
-        player = new game::Player();
+        camera = Camera(aspect);
+        camera.pos.z = 20.0f;
+        player = game::Player();
 
         
         //ddsTexture = createTexture2D(true, "../data/textures/crete_beton_dirt_01.dds");
@@ -68,13 +68,13 @@ public:
         levelShaderProgram = renderer::Shader("../data/shaders/basic_vertex.glsl", "../data/shaders/basic_fragment.glsl");
         levelShaderProgram.Bind();
         glUniform1i(glGetUniformLocation(levelShaderProgram.GetHandle(), "Sampler0"), 0);
-        renderer = new renderer::Renderer();
+        renderer = renderer::Renderer();
         LoadLevelTextured("../data/mesh.geom");
 
         for (int i = 0; i < entityCount; i++)
         {
 
-            renderer->drawTextured(entities[i]->obj.textured_vertices, entities[i]->obj.nVertices, entities[i]->obj.indices, entities[i]->obj.nIndices);
+            renderer.drawTextured(entities[i]->obj.textured_vertices, entities[i]->obj.nVertices, entities[i]->obj.indices, entities[i]->obj.nIndices);
         }
 
 
@@ -85,8 +85,8 @@ public:
         fullScreenShaderProgram = renderer::Shader("../data/shaders/fullscreen_vertex.glsl", "../data/shaders/fullscreen_fragment.glsl");
         fullScreenShaderProgram.Bind();
         glUniform1i(glGetUniformLocation(fullScreenShaderProgram.GetHandle(), "PositionTex"), 0);
-        createQuadVao();
-        createFBO();
+        //createQuadVao();
+        //createFBO();
 
         return true;
     }
@@ -165,10 +165,9 @@ public:
     }
     void render() final
     {
-        glViewport(0, 0, WIDTH, HEIGHT);
         glEnable(GL_DEPTH_TEST);
         glClearColor(.4f, 0.4f, 0.4f, 1.0f);
-        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+        //glBindFramebuffer(GL_FRAMEBUFFER, fbo);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         //glFrontFace(GL_CW);
 
@@ -179,7 +178,7 @@ public:
 
 
         levelShaderProgram.Bind();
-        renderer::shader_uniform_mat4(levelShaderProgram.GetHandle(), "uViewProjM", (const float*)&camera->mViewProj);
+        renderer::shader_uniform_mat4(levelShaderProgram.GetHandle(), "uViewProjM", (const float*)&camera.mViewProj);
 
         for (int i = 0; i < entityCount; i++) {
             //entities[i]->obj.diffuseMap->Set(glGetUniformLocation(levelShaderProgram->GetHandle(), "Sampler0"), 0);
@@ -189,9 +188,9 @@ public:
             glBindTexture(GL_TEXTURE_2D, entities[i]->obj.diffuseMap);
             renderer::shader_uniform_mat4(levelShaderProgram.GetHandle(), "uModelM",
                                           (const float *) &entities[i]->obj.matrix);
-            draw_mesh(renderer->batch[i]);
+            draw_mesh(renderer.batch[i]);
         }
-
+/*
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         fullScreenShaderProgram.Bind();
         // final render to default color buffer
@@ -202,23 +201,23 @@ public:
         glBindVertexArray(quad_vao);
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
-
-        //particleEmitter->render();
+*/
+        //particleEmitter.render();
     }
 
     void addParticleObject()
     {
-        particleEmitter = new game::particle::FireRing();
-        particleEmitter->setWindowHeight((float)HEIGHT);
-        particleEmitter->createBuffer();
+        particleEmitter = game::particle::FireRing();
+        particleEmitter.setWindowHeight((float)HEIGHT);
+        particleEmitter.createBuffer();
     }
 
     void particleObjectUpdate(float deltaTime)
     {
-        particleEmitter->update(deltaTime);
-        particleEmitter->setProj(camera->mProj);
-        particleEmitter->setView(camera->mView);
-        particleEmitter->setEyePos(camera->pos);
+        particleEmitter.update(deltaTime);
+        particleEmitter.setProj(camera.mProj);
+        particleEmitter.setView(camera.mView);
+        particleEmitter.setEyePos(camera.pos);
     }
 
 
@@ -226,31 +225,31 @@ public:
     {
 
         //particleObjectUpdate(deltaTime);
-        player->rot.y = mouseDelta.y * 0.001f;
-        player->rot.x = mouseDelta.x * 0.001f;
-        player->rot.x = glm::clamp(player->rot.x, -glm::half_pi<float>(), +glm::half_pi<float>());
+        player.rot.y = mouseDelta.y * 0.001f;
+        player.rot.x = mouseDelta.x * 0.001f;
+        player.rot.x = glm::clamp(player.rot.x, -glm::half_pi<float>(), +glm::half_pi<float>());
 
-        player->input = 0;
+        player.input = 0;
         if (isKeyPressed(KEY_A))
         {
-            player->input |= player->LEFT;
+            player.input |= player.LEFT;
         }
         if (isKeyPressed(KEY_D))
         {
-            player->input |= player->RIGHT;
+            player.input |= player.RIGHT;
         }
         if (isKeyPressed(KEY_W))
         {
-            player->input |= player->UP;
+            player.input |= player.UP;
         }
         if (isKeyPressed(KEY_S))
         {
-            player->input |= player->DOWN;
+            player.input |= player.DOWN;
         }
-        player->update(deltaTime);
-        camera->pos = player->pos;
-        camera->rot = player->rot;
-        camera->update();
+        player.update(deltaTime);
+        camera.pos = player.pos;
+        camera.rot = player.rot;
+        camera.update();
     }
 
     void idle() final
@@ -266,10 +265,10 @@ public:
     ~MainApp() override
     {
         //delete fullScreenShaderProgram;
-        delete particleEmitter;
-        delete camera;
-        delete player;
-        delete renderer;
+        ///delete particleEmitter;
+        //delete camera;
+        //delete player;
+        //delete renderer;
         ClearLevel();
     }
 };
@@ -278,6 +277,7 @@ public:
 
 int main(int argc,char **argv)
 {
+ 
     auto *mainApp = new MainApp();
     
     int w = WIDTH;

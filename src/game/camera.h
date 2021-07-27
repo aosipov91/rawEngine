@@ -9,6 +9,7 @@
 class Camera
 {
 public:
+        Camera() {}
 		explicit Camera(float aspect);
 		~Camera();
 		void update();

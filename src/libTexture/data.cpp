@@ -21,7 +21,6 @@
 
 
 Data :: Data ( void * ptr, int len )
-
 {
 	bits   = (byte *) ptr;
 	length = len;
@@ -35,14 +34,11 @@ Data :: Data ( const char * fileName )
 	char * name = strdup ( fileName );
 
 #ifdef	_WIN32
-
 	char * ptr;
-
-
-
 	while ( ( ptr = strchr ( name, '/' ) ) != NULL )
-
+        {
 		*ptr = '\\';
+        }
 
 #endif
 	bits   = NULL;
