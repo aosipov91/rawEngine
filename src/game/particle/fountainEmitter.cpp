@@ -15,10 +15,10 @@ namespace game {
                 , vbo(0)
                 , mSpawnDir1(-1.0f, -1.0f, -1.0f)
                 , mSpawnDir2(1.0f, 1.0f, 1.0f)
-                , mColor1(.4f, .2f, 6.0f, .9f)
-                , mColor2(.6f, .5f, .2f, .1f)
+                , mColor1(.1f, .1f, .1f, .1f)
+                , mColor2(1.f, 1.f, 1.f, .9f)
                 , mMinEmitRate(10.0f)
-                , mMaxEmitRate(30.f)
+                , mMaxEmitRate(60.f)
         {
             mParticles.resize(MAX_PARTICLES);
             mAliveParticles.resize(MAX_PARTICLES);

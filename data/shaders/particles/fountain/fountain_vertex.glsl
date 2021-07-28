@@ -38,13 +38,11 @@ void main()
 
     //pointSize += 8.0 * t * t;
     //float d = distance(posL, eyePos);
-    //vertex.size = glViewportHeight/(1.0 + 8.0 * d);
+    //vertex.size = glViewportHeight/(1.0 + 8.0 * d * size);
     vertex.size = size;
 
-    float x = (1.0f - (t / 1.0));
 
-    //vertex.color = vec4((1.0f - (t / lifeTime)));
-    vertex.color = color;//vec4(color / x);
+    vertex.color = color * vec4((1.0f - (t / lifeTime)));
 
     gl_Position = ModelViewMatrix * vec4(posL,1.0);
 }
