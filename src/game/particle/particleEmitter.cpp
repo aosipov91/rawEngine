@@ -1,5 +1,6 @@
 #include "particleEmitter.h"
 #include "src/libTexture/libTexture.h"
+#include "src/math/random.h"
 
 namespace game {
 namespace particle {
@@ -128,6 +129,10 @@ void ParticleEmitter::update(float deltaTime)
             timeAccum -= mTimePerParticle;
         }
     }
+
+
+
+
 }
 
 

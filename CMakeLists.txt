@@ -34,6 +34,8 @@ ${PLATFORM_SOURCES}
 	"src/renderer/model.cpp"
 	"src/renderer/renderer.h"
 	"src/renderer/renderer.cpp"
+        "src/renderer/renderBatcher.h"
+        "src/renderer/renderBatcher.cpp"
 
 
 	"src/scene/loadLevel.h"
@@ -46,15 +48,18 @@ ${PLATFORM_SOURCES}
 	"src/util/stream.cpp"
         "src/util/recyclingArray.h"
 
-
+        "src/math/transform.h"
+        "src/math/transform.cpp"
 
 	"src/game/particle/particle.h"
-	"src/game/particle/particleSystem.h"
-	"src/game/particle/particleSystem.cpp"
+	"src/game/particle/fountainEmitter.h"
+	"src/game/particle/fountainEmitter.cpp"
 	"src/game/particle/particleEmitter.h"
 	"src/game/particle/particleEmitter.cpp"
 	"src/game/particle/fireRing.h"
 	"src/game/particle/fireRing.cpp"
+        "src/game/particle/fountain.h"
+        "src/game/particle/fountain.cpp"
 	"src/game/camera.h"
 	"src/game/camera.cpp"
 	"src/game/player.h"
@@ -86,10 +91,11 @@ add_executable(${PROJECT_NAME} ${SOURCES_FILES_MAIN})
 if (MSVC)
 	target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} shell32 user32 gdi32 -NODEFAULTLIB:LIBCMT)
 else()
-        target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} -lm)
+
+    target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} -lm)
     set (CMAKE_CXX_FLAGS "-g")
-		set(CMAKE_CXX_STANDARD_LIBRARIES "-static-libgcc -static-libstdc++ -lwsock32 -lws2_32 ${CMAKE_CXX_STANDARD_LIBRARIES}")
-		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive")
+    set(CMAKE_CXX_STANDARD_LIBRARIES "-static-libgcc -static-libstdc++ -lwsock32 -lws2_32 ${CMAKE_CXX_STANDARD_LIBRARIES}")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive")
 endif()
     
 

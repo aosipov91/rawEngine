@@ -6,6 +6,7 @@
 
 struct Timer* timer = NULL;
 
+
 void init_timer(struct Timer* timer) {
     LARGE_INTEGER freq;
     QueryPerformanceFrequency( &freq );

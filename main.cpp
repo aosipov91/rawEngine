@@ -8,14 +8,18 @@
 #include "src/renderer/data/mesh.h"
 #include "src/renderer/uniform.h"
 #include "src/renderer/renderer.h"
+#include "src/renderer/renderBatcher.h"
 
 #include "src/game/particle/fireRing.h"
+#include "src/game/particle/fountain.h"
 #include "src/game/camera.h"
 #include "src/game/player.h"
 #include "src/game/entity.h"
 
 #include "src/scene/loadLevel.h"
 
+
+#include "src/math/transform.h"
 
 namespace {
 
@@ -31,6 +35,8 @@ private:
     glm::mat4 proj;
     glm::mat4 model;
     game::particle::FireRing particleEmitter;
+    game::particle::Fountain fountainEmitter;
+
     Camera camera{};
     game::Player player{};
     renderer::Renderer renderer;
@@ -80,7 +86,7 @@ public:
 
 
 
-        //addParticleObject();
+        addParticleObject();
 
         fullScreenShaderProgram = renderer::Shader("../data/shaders/fullscreen_vertex.glsl", "../data/shaders/fullscreen_fragment.glsl");
         fullScreenShaderProgram.Bind();
@@ -202,29 +208,47 @@ public:
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
 */
+
+        fountainEmitter.render();
         //particleEmitter.render();
     }
 
+    void draw3DObject(Mesh* mesh, Transform transform, renderer::RenderMaterial material)
+    {
+        
+    }
+
+
     void addParticleObject()
     {
-        particleEmitter = game::particle::FireRing();
-        particleEmitter.setWindowHeight((float)HEIGHT);
-        particleEmitter.createBuffer();
+        fountainEmitter = game::particle::Fountain();
+        fountainEmitter.setWindowHeight((float)HEIGHT);
+        fountainEmitter.createBuffer();
+
+       // particleEmitter = game::particle::FireRing();
+        //particleEmitter.setWindowHeight((float)HEIGHT);
+        //particleEmitter.createBuffer();
     }
 
     void particleObjectUpdate(float deltaTime)
     {
-        particleEmitter.update(deltaTime);
-        particleEmitter.setProj(camera.mProj);
-        particleEmitter.setView(camera.mView);
-        particleEmitter.setEyePos(camera.pos);
+        fountainEmitter.update(deltaTime);
+        fountainEmitter.setProj(camera.mProj);
+        fountainEmitter.setView(camera.mView);
+        fountainEmitter.setEyePos(camera.pos);
+
+        //particleEmitter.update(deltaTime);
+        //particleEmitter.setProj(camera.mProj);
+        //particleEmitter.setView(camera.mView);
+        //particleEmitter.setEyePos(camera.pos);
     }
 
 
     void update(float deltaTime)
     {
 
-        //particleObjectUpdate(deltaTime);
+        particleObjectUpdate(deltaTime);
+
         player.rot.y = mouseDelta.y * 0.001f;
         player.rot.x = mouseDelta.x * 0.001f;
         player.rot.x = glm::clamp(player.rot.x, -glm::half_pi<float>(), +glm::half_pi<float>());
@@ -264,11 +288,6 @@ public:
     
     ~MainApp() override
     {
-        //delete fullScreenShaderProgram;
-        ///delete particleEmitter;
-        //delete camera;
-        //delete player;
-        //delete renderer;
         ClearLevel();
     }
 };

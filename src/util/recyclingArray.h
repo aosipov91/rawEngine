@@ -1,6 +1,9 @@
 #ifndef RECYCLING_ARRAY
 #define RECYCLING_ARRAY
 
+#include <stdexcept>
+
+
 template <class TArrayElement, int iNumElements>
 class CRecyclingArray 
 {

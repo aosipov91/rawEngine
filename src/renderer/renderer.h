@@ -4,6 +4,17 @@
 #include "src/renderer/data/mesh.h"
 namespace renderer {
 
+class RenderMaterial
+{
+public:
+    float data;
+};
+
+class TexturedVertex{
+public:
+    float data;
+};
+
 class Renderer
 {
 public:

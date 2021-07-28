@@ -23,6 +23,7 @@ public:
 
     float mAspect;
 	
+    float X;
 
 
 };

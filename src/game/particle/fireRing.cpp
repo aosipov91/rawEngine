@@ -12,7 +12,6 @@ FireRing::FireRing()
 : ParticleEmitter()
 {}
 FireRing::~FireRing() = default;
-
 void FireRing::initParticle(Particle& out)
 {
     out.initialTime = mTime;

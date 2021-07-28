@@ -2,23 +2,24 @@
 #define PARTICLE_H_
 
 #include <glm/vec3.hpp>
-
+#include <glm/vec4.hpp>
 namespace game {
 namespace particle {
 
 class CParticle
 {
 public:
-  CParticle() { initialSize = 1.0f; lifeTime = 1.0f; age = 0.0f; mass = 0.0f; }
+  CParticle() { mSize = 1.0f; mLifeTime = 1.0f; mAge = 0.0f; }
   virtual ~CParticle() { }
 
-    glm::vec3 initialPos;
-    glm::vec3 initialVelocity;
-    float initialSize;
-    float age; // is age of particle
-    float lifeTime; // is time of life
-    float mass;
-    glm::vec3 initialColor;
+  float mSize;
+  float mLifeTime;
+  float mAge;
+  glm::vec4 mColor;
+  glm::vec3 mColorStep;
+
+  glm::vec3 mPosition;
+  glm::vec3 mDirection;
 
   // this function is inline not because it's small, but because it's only called
   // in one place (CParticleEmitter.Update()).  This way we can also dodge the
@@ -30,20 +31,28 @@ public:
   inline bool Update(float fTimeDelta)
   {
     // age the particle
-		age += fTimeDelta;
+		mAge += fTimeDelta;
 
     // if this particle's age is greater than it's lifetime, it dies.
-    if (age >= lifeTime) {
+    if (mAge >= mLifeTime) {
       return(false); // dead!
     }
 
 		// move particle
-		initialPos += initialVelocity * fTimeDelta;
+		mPosition += mDirection * fTimeDelta;
 
     return(true); // particle stays alive
   }
 };
-
+    struct RealParticleFountain
+    {
+        glm::vec3 initialPos;
+        glm::vec3 initialVelocity;
+        glm::vec4 color;
+        float initialSize;
+        float initialTime;
+        float lifeTime;
+    };
 
 struct RealParticle
 {

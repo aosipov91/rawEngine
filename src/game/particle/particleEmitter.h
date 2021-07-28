@@ -12,7 +12,7 @@
 #include "src/renderer/texture.h"
 #include "src/renderer/shader.h"
 
-#include "src/util/recyclingArray.h"
+
 
 namespace game {
 namespace particle {
@@ -20,12 +20,14 @@ namespace particle {
 class ParticleEmitter
 {
 public:
-	ParticleEmitter();
-	virtual ~ParticleEmitter();
+    ParticleEmitter();
+    virtual ~ParticleEmitter();
 
-	virtual void update(float deltaTime);
-	virtual void render();
-	void createBuffer();
+    virtual void update(float deltaTime);
+    virtual void render();
+
+    void createBuffer();
+
     void setProj(glm::mat4& proj) const;
     void setView(glm::mat4& view) const;
     void setEyePos(glm::vec3& eyePos) const;
@@ -34,9 +36,9 @@ public:
         mViewportHeight = height;
     }
 
-	unsigned int count;
-	float mTimePerParticle;
-	float mViewportHeight;
+    unsigned int count;
+    float mTimePerParticle;
+    float mViewportHeight;
 protected:
     virtual void initParticle(Particle& out) = 0;
     float mTime;
@@ -67,7 +69,9 @@ private:
     renderer::Shader* shaderProgram;
     unsigned int ptTexture;
 
-    CRecyclingArray<CParticle, MAX_PARTICLES> particleList;
+    float mMinEmitRate;
+    float mMaxEmitRate;
+    float mNumNewPartsExcess;
 };
 
 }

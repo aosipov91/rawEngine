@@ -29,6 +29,8 @@ typedef struct Timer
 
 extern struct Timer* timer;
 
+
+
 struct Timer* create_timer(void);
 //void destroy_timer(struct Timer* timer);
 void init_timer(struct Timer* timer);

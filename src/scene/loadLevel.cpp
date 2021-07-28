@@ -45,7 +45,7 @@ bool LoadLevelTextured(const char* filename)
 
 
         stream_read(&stream, &entity->obj.nIndices, sizeof(entity->obj.nIndices));
-        entity->obj.indices = (unsigned*)calloc(entity->obj.nIndices, sizeof(unsigned));// new unsigned[entity->obj.nIndices];
+        entity->obj.indices = (unsigned int*)calloc(entity->obj.nIndices, sizeof(unsigned int));// new unsigned[entity->obj.nIndices];
         stream_read(&stream, entity->obj.indices, entity->obj.nIndices * sizeof(unsigned int));
 
         // it's actually num of element in array of vertices

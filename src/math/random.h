@@ -4,7 +4,20 @@
 #include <glm/vec3.hpp>
 namespace math {
 
-
+inline int RandomNumber(int min, int max)
+{
+    if (min == max) return (min);
+    return ((rand()% (abs(max-min)+1)) +min);
+}
+inline float RandomNumber(float min, float max)
+{
+    if (min == max)
+    {
+        return min;
+    }
+    float random = (float)rand() / (float) RAND_MAX;
+    return ((random * (float)fabs(max-min))+min);
+}
 
 inline float GetRandomFloat(float a, float b)
 {
