@@ -62,7 +62,7 @@ struct RealParticle
     float initialTime;
     float lifeTime;
     float mass;
-    glm::vec3 initialColor;
+    glm::vec4 initialColor;
 };
 
 struct Particle

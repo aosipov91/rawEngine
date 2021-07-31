@@ -28,9 +28,9 @@ public:
 
     void createBuffer();
 
-    void setProj(glm::mat4& proj) const;
-    void setView(glm::mat4& view) const;
-    void setEyePos(glm::vec3& eyePos) const;
+    void setProj(glm::mat4& proj);
+    void setView(glm::mat4& view);
+    void setEyePos(glm::vec3& eyePos);
     void setWindowHeight(float height)
     {
         mViewportHeight = height;
@@ -39,8 +39,9 @@ public:
     unsigned int count;
     float mTimePerParticle;
     float mViewportHeight;
+    GLuint program = 0;
 protected:
-    virtual void initParticle(Particle& out) = 0;
+    virtual void initParticle(RealParticle& out) = 0;
     float mTime;
 private:
     void addParticle();
@@ -49,7 +50,7 @@ private:
     GLuint vbo;
 
     enum {
-        MAX_PARTICLES = 1500
+        MAX_PARTICLES = 500
     };
 
     enum {
@@ -62,9 +63,9 @@ private:
         COLOR_SLOT
     };
 
-    std::vector<Particle> mParticles;
-    std::vector<Particle*> mAliveParticles;
-    std::vector<Particle*> mDeadParticles;
+    std::vector<RealParticle> mParticles;
+    std::vector<RealParticle*> mAliveParticles;
+    std::vector<RealParticle*> mDeadParticles;
 
     renderer::Shader* shaderProgram;
     unsigned int ptTexture;

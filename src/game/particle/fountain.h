@@ -9,7 +9,7 @@ namespace game {
         class Fountain : public FountainEmitter
         {
         public:
-            Fountain();
+            Fountain(glm::vec3 pos);
             ~Fountain() override;
             void initParticle(CParticle& out);
         };

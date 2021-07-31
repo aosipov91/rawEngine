@@ -9,7 +9,6 @@ ParticleEmitter::ParticleEmitter()
     : count(0)
     , mTime(0.0f)
     , mTimePerParticle(0.0025f)
-    , shaderProgram(nullptr)
     , mViewportHeight(0.0f)
     , vao(0)
     , vbo(0)
@@ -20,7 +19,7 @@ ParticleEmitter::ParticleEmitter()
 
     for(int i = 0; i < MAX_PARTICLES; ++i)
     {
-        mParticles[i].lifeTime = -1.0f; 
+        mParticles[i].lifeTime = -1.0f;
         mParticles[i].initialTime = 0.0f;
     }
 
@@ -29,7 +28,6 @@ ParticleEmitter::ParticleEmitter()
 
 ParticleEmitter::~ParticleEmitter()
 {
-    delete shaderProgram;
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glDeleteBuffers(1, &vbo);
@@ -41,7 +39,7 @@ void ParticleEmitter::addParticle()
 {
         if (!mDeadParticles.empty())
         {
-            Particle* p= mDeadParticles.back();
+            RealParticle* p= mDeadParticles.back();
             initParticle(*p);
 
             mDeadParticles.pop_back();
@@ -52,24 +50,31 @@ void ParticleEmitter::addParticle()
 
 void ParticleEmitter::createBuffer()
 {
-    shaderProgram = new renderer::Shader(
+    program = renderer::load_program(
                         "../data/shaders/particles/point_vertex.glsl",
                         "../data/shaders/particles/point_fragment.glsl",
                         "../data/shaders/particles/point_geom.glsl");
 
-    shaderProgram->Bind();
+    glUseProgram(program);
 
     ptTexture = createTexture2D(true, "../data/textures/torch.dds");
     //renderer::Uniform<int>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "SpriteTex"), 0);
-    glUniform1i(glGetUniformLocation(shaderProgram->GetHandle(), "SpriteTex"), 0);
+    glUniform1i(glGetUniformLocation(program, "SpriteTex"), 0);
     //renderer::Uniform<float>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "Size2"), 0.5f);
     //renderer::Uniform<float>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "gTime"), get_running_time(timer));
-    glUniform1f(glGetUniformLocation(shaderProgram->GetHandle(), "gTime"), mTime);
+    glUniform1f(glGetUniformLocation(program, "gTime"), mTime);
     //renderer::Uniform<vec3>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "gAccel"), vec3(0.0f, 0.9f, 0.0f));
-    renderer::shader_uniform_3f(shaderProgram->GetHandle(), "gAccel", 0.0f, 0.9f, 0.0f);
-    glUniform1f(glGetUniformLocation(shaderProgram->GetHandle(), "glViewportHeight"), mViewportHeight);
+    renderer::shader_uniform_3f(program, "gAccel", 0.0f, 0.9f, 0.0f);
+    glUniform1f(glGetUniformLocation(program, "glViewportHeight"), mViewportHeight);
 
 
+    GLintptr vertex_position_offset = 0;
+    GLintptr vertex_velocity_offset = 3 * sizeof(float);
+    GLintptr vertex_size_offset = 6 * sizeof(float);
+    GLintptr vertex_time_offset = 7 * sizeof(float);
+    GLintptr vertex_life_offset = 8 * sizeof(float);
+    GLintptr vertex_mass_offset = 9 * sizeof(float);
+    GLintptr vertex_color_offset = 10 * sizeof(float);
 
 
     glGenVertexArrays(1, &vao);
@@ -78,13 +83,13 @@ void ParticleEmitter::createBuffer()
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, MAX_PARTICLES * sizeof(RealParticle), nullptr, GL_STREAM_DRAW);
     float *ptr = nullptr;
-    glVertexAttribPointer(POSITION_SLOT, 3, GL_FLOAT, GL_FALSE, sizeof(RealParticle), (void*)(ptr+=0));
-    glVertexAttribPointer(VELOCITY_SLOT, 3, GL_FLOAT, GL_FALSE, sizeof(RealParticle), (void*)(ptr+=3));
-    glVertexAttribPointer(SIZE_SLOT, 1, GL_FLOAT, GL_FALSE, sizeof(RealParticle), (void*)(ptr+=3));
-    glVertexAttribPointer(TIME_SLOT, 1, GL_FLOAT, GL_FALSE, sizeof(RealParticle), (void*)(ptr+=1));
-    glVertexAttribPointer(LIFE_SLOT, 1, GL_FLOAT, GL_FALSE, sizeof(RealParticle), (void*)(ptr+=1));
-    glVertexAttribPointer(MASS_SLOT, 1, GL_FLOAT, GL_FALSE, sizeof(RealParticle), (void*)(ptr+=1));
-    glVertexAttribPointer(COLOR_SLOT, 3, GL_FLOAT, GL_FALSE, sizeof(RealParticle), (void*)(ptr+=1));
+    glVertexAttribPointer(POSITION_SLOT, 3, GL_FLOAT, GL_FALSE, sizeof(RealParticle), (GLvoid*)vertex_position_offset);
+    glVertexAttribPointer(VELOCITY_SLOT, 3, GL_FLOAT, GL_FALSE, sizeof(RealParticle), (void*)vertex_velocity_offset);
+    glVertexAttribPointer(SIZE_SLOT, 1, GL_FLOAT, GL_FALSE, sizeof(RealParticle), (void*)vertex_size_offset);
+    glVertexAttribPointer(TIME_SLOT, 1, GL_FLOAT, GL_FALSE, sizeof(RealParticle), (void*)vertex_time_offset);
+    glVertexAttribPointer(LIFE_SLOT, 1, GL_FLOAT, GL_FALSE, sizeof(RealParticle), (void*)vertex_life_offset);
+    glVertexAttribPointer(MASS_SLOT, 1, GL_FLOAT, GL_FALSE, sizeof(RealParticle), (void*)vertex_mass_offset);
+    glVertexAttribPointer(COLOR_SLOT, 4, GL_FLOAT, GL_FALSE, sizeof(RealParticle), (void*)vertex_color_offset);
     glEnableVertexAttribArray( POSITION_SLOT );
     glEnableVertexAttribArray( VELOCITY_SLOT );
     glEnableVertexAttribArray( SIZE_SLOT );
@@ -138,20 +143,21 @@ void ParticleEmitter::update(float deltaTime)
 
 void ParticleEmitter::render()
 {
-    shaderProgram->Bind();
+    glUseProgram(program);
 
-    glDisable(GL_DEPTH_TEST);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_ONE, GL_ONE );
+    //glDisable(GL_DEPTH_TEST);
+    //glEnable(GL_BLEND);
+    //glBlendFunc(GL_ONE, GL_ONE );
 
-    glUniform1f(glGetUniformLocation(shaderProgram->GetHandle(), "gTime"), mTime);
+    glUniform1f(glGetUniformLocation(program, "gTime"), mTime);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, ptTexture);
     glBindVertexArray(vao);
 
     int numActiveParticles = 0;
-    auto* pData = static_cast<float*>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
+    float* pData = (float*)glMapBufferRange(GL_ARRAY_BUFFER, 0, mAliveParticles.size() * sizeof(RealParticle),  GL_MAP_WRITE_BIT  | GL_MAP_FLUSH_EXPLICIT_BIT );
+    glFlushMappedBufferRange(GL_ARRAY_BUFFER, 0, mAliveParticles.size() * sizeof(RealParticle));
     for (auto & mAliveParticle : mAliveParticles)
     {
         *(pData++)=mAliveParticle->initialPos.x;
@@ -167,30 +173,32 @@ void ParticleEmitter::render()
         *(pData++)=mAliveParticle->initialColor.x;
         *(pData++)=mAliveParticle->initialColor.y;
         *(pData++)=mAliveParticle->initialColor.z;
+        *(pData++)=mAliveParticle->initialColor.w;
         numActiveParticles++;
     }
+    pData = 0;
     glUnmapBuffer(GL_ARRAY_BUFFER);
 
-    glDrawArrays(GL_POINTS, 0, numActiveParticles);
+    glDrawArrays(GL_POINTS, 0, mAliveParticles.size());
     glBindVertexArray(0);
 
-    glDisable(GL_BLEND);
+    //glDisable(GL_BLEND);
 
 }
 
-void ParticleEmitter::setProj(glm::mat4& proj) const
+void ParticleEmitter::setProj(glm::mat4& proj)
 {
     //renderer::Uniform<mat4>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "ProjectionMatrix"), proj);
-    renderer::shader_uniform_mat4(shaderProgram->GetHandle(), "ProjectionMatrix", glm::value_ptr(proj));
+    renderer::shader_uniform_mat4(program, "ProjectionMatrix", glm::value_ptr(proj));
 }
-void ParticleEmitter::setView(glm::mat4& view) const
+void ParticleEmitter::setView(glm::mat4& view)
 {
     //renderer::Uniform<mat4>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "ModelViewMatrix"), view);
-    renderer::shader_uniform_mat4(shaderProgram->GetHandle(), "ModelViewMatrix", glm::value_ptr(view));
+    renderer::shader_uniform_mat4(program, "ModelViewMatrix", glm::value_ptr(view));
 }
 
-void ParticleEmitter::setEyePos(glm::vec3 &eyePos) const {
-    renderer::shader_uniform_3f(shaderProgram->GetHandle(), "eyePos", eyePos.x, eyePos.y, eyePos.z);
+void ParticleEmitter::setEyePos(glm::vec3 &eyePos){
+    renderer::shader_uniform_3f(program, "eyePos", eyePos.x, eyePos.y, eyePos.z);
 }
 
 

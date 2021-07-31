@@ -8,15 +8,17 @@
 namespace game {
     namespace particle {
 
-        Fountain::Fountain()
-            : FountainEmitter()
+
+
+        Fountain::Fountain(glm::vec3 pos)
+            : FountainEmitter(pos)
         {}
         Fountain::~Fountain() = default;
 
 
         void Fountain::initParticle(CParticle& out)
         {
-            out.mPosition = glm::vec3(0.0f);
+            out.mPosition = position;
             out.mDirection = glm::vec3(math::RandomNumber(mSpawnDir1.x, mSpawnDir2.x),
                                        math::RandomNumber(mSpawnDir1.y, mSpawnDir2.y),
                                        math::RandomNumber(mSpawnDir1.z, mSpawnDir2.z));

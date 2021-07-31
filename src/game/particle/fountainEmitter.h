@@ -21,7 +21,8 @@ namespace game {
         class FountainEmitter
         {
         public:
-            FountainEmitter();
+
+            FountainEmitter(glm::vec3 pos);
             virtual ~FountainEmitter();
 
             virtual void update(float deltaTime);
@@ -68,6 +69,7 @@ namespace game {
             std::vector<CParticle*> mDeadParticles;
 
             renderer::Shader* shaderProgram;
+            GLuint program;
             unsigned int ptTexture;
 
             float mMinEmitRate;
@@ -79,6 +81,8 @@ namespace game {
 
             glm::vec4 mColor1;
             glm::vec4 mColor2;
+
+            glm::vec3 position;
         };
 
     }

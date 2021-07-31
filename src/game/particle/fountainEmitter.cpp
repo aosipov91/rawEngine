@@ -5,11 +5,10 @@
 namespace game {
     namespace particle {
 
-        FountainEmitter::FountainEmitter()
+        FountainEmitter::FountainEmitter(glm::vec3 pos)
                 : count(0)
                 , mTime(0.0f)
                 , mTimePerParticle(0.0025f)
-                , shaderProgram(nullptr)
                 , mViewportHeight(0.0f)
                 , vao(0)
                 , vbo(0)
@@ -19,6 +18,8 @@ namespace game {
                 , mColor2(1.f, 1.f, 1.f, .9f)
                 , mMinEmitRate(10.0f)
                 , mMaxEmitRate(60.f)
+                , position(pos)
+                , program(0)
         {
             mParticles.resize(MAX_PARTICLES);
             mAliveParticles.resize(MAX_PARTICLES);
@@ -35,7 +36,6 @@ namespace game {
 
         FountainEmitter::~FountainEmitter()
         {
-            delete shaderProgram;
             glBindVertexArray(vao);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
             glDeleteBuffers(1, &vbo);
@@ -58,18 +58,18 @@ namespace game {
 
         void FountainEmitter::createBuffer()
         {
-            shaderProgram = new renderer::Shader(
+            program = renderer::load_program(
                     "../data/shaders/particles/fountain/fountain_vertex.glsl",
                     "../data/shaders/particles/fountain/fountain_fragment.glsl",
                     "../data/shaders/particles/fountain/fountain_geom.glsl");
 
-            shaderProgram->Bind();
+            glUseProgram(program);
 
             ptTexture = createTexture2D(true, "../data/textures/smoke.dds");
-            glUniform1i(glGetUniformLocation(shaderProgram->GetHandle(), "SpriteTex"), 0);
-            glUniform1f(glGetUniformLocation(shaderProgram->GetHandle(), "gTime"), mTime);
-            glUniform3f(glGetUniformLocation(shaderProgram->GetHandle(), "gAccel"), 0.0f, 0.9f, 0.0f);
-            glUniform1f(glGetUniformLocation(shaderProgram->GetHandle(), "glViewportHeight"), mViewportHeight);
+            glUniform1i(glGetUniformLocation(program, "SpriteTex"), 0);
+            glUniform1f(glGetUniformLocation(program, "gTime"), mTime);
+            glUniform3f(glGetUniformLocation(program, "gAccel"), 0.0f, 0.9f, 0.0f);
+            glUniform1f(glGetUniformLocation(program, "glViewportHeight"), mViewportHeight);
 
 
             GLintptr vertex_position_offset = 0;
@@ -159,61 +159,67 @@ namespace game {
 
         void FountainEmitter::render()
         {
-            shaderProgram->Bind();
+            glUseProgram(program);
 
-            glDisable(GL_DEPTH_TEST);
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_ONE, GL_ONE );
+            //glDisable(GL_DEPTH_TEST);
+            //glEnable(GL_BLEND);
+            //glBlendFunc(GL_ONE, GL_ONE );
 
-            glUniform1f(glGetUniformLocation(shaderProgram->GetHandle(), "gTime"), mTime);
+            glUniform1f(glGetUniformLocation(program, "gTime"), mTime);
 
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, ptTexture);
             glBindVertexArray(vao);
 
+            glBindBuffer(GL_ARRAY_BUFFER, vbo);
             int numActiveParticles = 0;
-            auto* pData = static_cast<float*>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
-            for (auto & mAliveParticle : mAliveParticles)
+            //float* pData = (float*)glFlushMappedBufferRange(GL_ARRAY_BUFFER, 0, mAliveParticles.size() * sizeof(RealParticleFountain));
+            float* pData = (float*)glMapBufferRange(GL_ARRAY_BUFFER, 0, mAliveParticles.size() * sizeof(RealParticleFountain),  GL_MAP_WRITE_BIT  | GL_MAP_FLUSH_EXPLICIT_BIT );
+            glFlushMappedBufferRange(GL_ARRAY_BUFFER, 0, mAliveParticles.size() * sizeof(RealParticleFountain));
+            //memcpy(pData, mAliveParticles.data(), mAliveParticles.size() *sizeof(float)*13);
+            for (int i = 0; i < mAliveParticles.size(); i++)
             {
-                *(pData++)=mAliveParticle->mPosition.x;
-                *(pData++)=mAliveParticle->mPosition.y;
-                *(pData++)=mAliveParticle->mPosition.z;
-                *(pData++)=mAliveParticle->mDirection.x;
-                *(pData++)=mAliveParticle->mDirection.y;
-                *(pData++)=mAliveParticle->mDirection.z;
-                *(pData++)=mAliveParticle->mSize;
-                *(pData++)=mAliveParticle->mAge;
-                *(pData++)=mAliveParticle->mLifeTime;
-                *(pData++)=mAliveParticle->mColor.x;
-                *(pData++)=mAliveParticle->mColor.y;
-                *(pData++)=mAliveParticle->mColor.z;
-                *(pData++)=mAliveParticle->mColor.w;
+                *(pData++)=mAliveParticles[i]->mPosition.x;
+                *(pData++)=mAliveParticles[i]->mPosition.y;
+                *(pData++)=mAliveParticles[i]->mPosition.z;
+                *(pData++)=mAliveParticles[i]->mDirection.x;
+                *(pData++)=mAliveParticles[i]->mDirection.y;
+                *(pData++)=mAliveParticles[i]->mDirection.z;
+                *(pData++)=mAliveParticles[i]->mSize;
+                *(pData++)=mAliveParticles[i]->mAge;
+                *(pData++)=mAliveParticles[i]->mLifeTime;
+                *(pData++)=mAliveParticles[i]->mColor.x;
+                *(pData++)=mAliveParticles[i]->mColor.y;
+                *(pData++)=mAliveParticles[i]->mColor.z;
+                *(pData++)=mAliveParticles[i]->mColor.w;
                 numActiveParticles++;
+                
             }
+            pData = nullptr;
             glUnmapBuffer(GL_ARRAY_BUFFER);
 
-            glDrawArrays(GL_POINTS, 0, numActiveParticles);
+            glDrawArrays(GL_POINTS, 0, mAliveParticles.size());
             glBindVertexArray(0);
 
-            glDisable(GL_BLEND);
+            //glDisable(GL_BLEND);
+
 
         }
 
         void FountainEmitter::setProj(glm::mat4& proj) const
         {
-            //renderer::Uniform<mat4>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "ProjectionMatrix"), proj);
-            renderer::shader_uniform_mat4(shaderProgram->GetHandle(), "ProjectionMatrix", glm::value_ptr(proj));
+            glUseProgram(program);
+            renderer::shader_uniform_mat4(program, "ProjectionMatrix", glm::value_ptr(proj));
         }
         void FountainEmitter::setView(glm::mat4& view) const
         {
-            //renderer::Uniform<mat4>::Set(glGetUniformLocation(shaderProgram->GetHandle(), "ModelViewMatrix"), view);
-            renderer::shader_uniform_mat4(shaderProgram->GetHandle(), "ModelViewMatrix", glm::value_ptr(view));
+            glUseProgram(program);
+            renderer::shader_uniform_mat4(program, "ModelViewMatrix", glm::value_ptr(view));
         }
 
         void FountainEmitter::setEyePos(glm::vec3 &eyePos) const {
-            //renderer::shader_uniform_3f(shaderProgram->GetHandle(), "eyePos", eyePos.x, eyePos.y, eyePos.z);
-            shaderProgram->Bind();
-            glUniform3f(glGetUniformLocation(shaderProgram->GetHandle(), "eyePos"),eyePos.x, eyePos.y, eyePos.z);
+            glUseProgram(program);
+            glUniform3f(glGetUniformLocation(program, "eyePos"),eyePos.x, eyePos.y, eyePos.z);
         }
 
 

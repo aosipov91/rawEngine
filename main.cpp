@@ -8,7 +8,8 @@
 #include "src/renderer/data/mesh.h"
 #include "src/renderer/uniform.h"
 #include "src/renderer/renderer.h"
-#include "src/renderer/renderBatcher.h"
+
+
 
 #include "src/game/particle/fireRing.h"
 #include "src/game/particle/fountain.h"
@@ -34,28 +35,24 @@ private:
     float deltaTime;
     glm::mat4 proj;
     glm::mat4 model;
+    game::particle::Fountain fE{glm::vec3(-10.0, 0.0, 0.0)};
+    game::particle::Fountain AE{glm::vec3(0.0, 0.0, 0.0)};
     game::particle::FireRing particleEmitter;
-    game::particle::Fountain fountainEmitter;
+    game::particle::Fountain fountainEmitter{glm::vec3(10.0, 0.0, 0.0)};
 
     Camera camera{};
     game::Player player{};
     renderer::Renderer renderer;
-    renderer::Shader levelShaderProgram;
-    renderer::Shader fullScreenShaderProgram;
 
     GLuint fbo{};
     GLuint renderTarget{};
     GLuint quad_vao{};
 public:
     MainApp()
-        : core::Application()
-        , deltaTime(0.0f)
+        : deltaTime(0.0f)
         , proj()
         , model()
-        , particleEmitter()
         , renderer()
-        , levelShaderProgram()
-        , fullScreenShaderProgram()
     {
 
 
@@ -65,17 +62,12 @@ public:
         camera = Camera(aspect);
         camera.pos.z = 20.0f;
         player = game::Player();
-
-        
-        //ddsTexture = createTexture2D(true, "../data/textures/crete_beton_dirt_01.dds");
-        //ddsTexture = createTexture2D(false, "../data/textures/tile_walls_pink_01.dds");
-        //ddsTexture = createTexture2D(true, "../data/textures/crete_walls_01.dds");
-
-        levelShaderProgram = renderer::Shader("../data/shaders/basic_vertex.glsl", "../data/shaders/basic_fragment.glsl");
-        levelShaderProgram.Bind();
-        glUniform1i(glGetUniformLocation(levelShaderProgram.GetHandle(), "Sampler0"), 0);
+        GLuint program = renderer::load_program("../data/shaders/basic_vertex.glsl", "../data/shaders/basic_fragment.glsl");
+        //levelShaderProgram = new renderer::Shader("../data/shaders/basic_vertex.glsl", "../data/shaders/basic_fragment.glsl");
+        //levelShaderProgram->Bind();
+        //glUniform1i(glGetUniformLocation(levelShaderProgram->GetHandle(), "Sampler0"), 0);
         renderer = renderer::Renderer();
-        LoadLevelTextured("../data/mesh.geom");
+        //LoadLevelTextured("../data/mesh.geom");
 
         for (int i = 0; i < entityCount; i++)
         {
@@ -88,9 +80,6 @@ public:
 
         addParticleObject();
 
-        fullScreenShaderProgram = renderer::Shader("../data/shaders/fullscreen_vertex.glsl", "../data/shaders/fullscreen_fragment.glsl");
-        fullScreenShaderProgram.Bind();
-        glUniform1i(glGetUniformLocation(fullScreenShaderProgram.GetHandle(), "PositionTex"), 0);
         //createQuadVao();
         //createFBO();
 
@@ -182,7 +171,7 @@ public:
 
 
 
-
+/*
         levelShaderProgram.Bind();
         renderer::shader_uniform_mat4(levelShaderProgram.GetHandle(), "uViewProjM", (const float*)&camera.mViewProj);
 
@@ -196,6 +185,7 @@ public:
                                           (const float *) &entities[i]->obj.matrix);
             draw_mesh(renderer.batch[i]);
         }
+*/
 /*
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         fullScreenShaderProgram.Bind();
@@ -208,9 +198,15 @@ public:
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
 */
-
+        glDisable(GL_DEPTH_TEST);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_ONE, GL_ONE );
+        fE.render();
+        AE.render();
         fountainEmitter.render();
-        //particleEmitter.render();
+        particleEmitter.render();
+        glDisable(GL_BLEND);
+
     }
 
     void draw3DObject(Mesh* mesh, Transform transform, renderer::RenderMaterial material)
@@ -221,26 +217,42 @@ public:
 
     void addParticleObject()
     {
-        fountainEmitter = game::particle::Fountain();
+        fE.setWindowHeight((float)HEIGHT);
+        fE.createBuffer();
+        AE.setWindowHeight((float)HEIGHT);
+        AE.createBuffer();
         fountainEmitter.setWindowHeight((float)HEIGHT);
         fountainEmitter.createBuffer();
 
-       // particleEmitter = game::particle::FireRing();
-        //particleEmitter.setWindowHeight((float)HEIGHT);
-        //particleEmitter.createBuffer();
+
+
+        particleEmitter.setWindowHeight((float)HEIGHT);
+        particleEmitter.createBuffer();
     }
 
     void particleObjectUpdate(float deltaTime)
     {
+
+
+        fE.update(deltaTime);
+        fE.setProj(camera.mProj);
+        fE.setView(camera.mView);
+        fE.setEyePos(camera.pos);
+
+        AE.update(deltaTime);
+        AE.setProj(camera.mProj);
+        AE.setView(camera.mView);
+        AE.setEyePos(camera.pos);
+
         fountainEmitter.update(deltaTime);
         fountainEmitter.setProj(camera.mProj);
         fountainEmitter.setView(camera.mView);
         fountainEmitter.setEyePos(camera.pos);
 
-        //particleEmitter.update(deltaTime);
-        //particleEmitter.setProj(camera.mProj);
-        //particleEmitter.setView(camera.mView);
-        //particleEmitter.setEyePos(camera.pos);
+        particleEmitter.update(deltaTime);
+        particleEmitter.setProj(camera.mProj);
+        particleEmitter.setView(camera.mView);
+        particleEmitter.setEyePos(camera.pos);
     }
 
 
@@ -288,7 +300,9 @@ public:
     
     ~MainApp() override
     {
-        ClearLevel();
+       // delete levelShaderProgram;
+        //delete particleEmitter;
+        //ClearLevel();
     }
 };
 
@@ -298,7 +312,7 @@ int main(int argc,char **argv)
 {
  
     auto *mainApp = new MainApp();
-    
+
     int w = WIDTH;
     int h = HEIGHT;
     bool fs = false;
@@ -317,18 +331,18 @@ int main(int argc,char **argv)
             sscanf(argv[++i],"%d",&h);
         }
     }
-    
+
     if(!mainApp->setVideoMode(w,h,fs))
     {
         return EXIT_FAILURE;
     }
-    
+
     mainApp->setTitle("3D Engine demo v0.1");
 
     mainApp->init();
 
     mainApp->main();
-    
+
     //Engine::clear();
     delete mainApp;
 

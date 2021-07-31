@@ -32,8 +32,8 @@ extern PFNGLCOMPRESSEDTEXIMAGE2DPROC glCompressedTexImage2D;
 #include <GL/glu.h>
 
 #endif
-
-
+extern PFNGLFLUSHMAPPEDBUFFERRANGEPROC glFlushMappedBufferRange;
+extern PFNGLMAPBUFFERRANGEPROC glMapBufferRange;
 extern PFNGLMAPBUFFERPROC glMapBuffer;
 extern PFNGLUNMAPBUFFERPROC glUnmapBuffer;
 extern PFNGLGETACTIVEUNIFORMPROC glGetActiveUniform;

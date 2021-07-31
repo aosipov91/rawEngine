@@ -6,7 +6,7 @@ layout (location = 2) in float size;
 layout (location = 3) in float time;
 layout (location = 4) in float lifeTime;
 layout (location = 5) in float mass;
-layout (location = 6) in vec3 color;
+layout (location = 6) in vec4 color;
 
 
 
@@ -48,9 +48,9 @@ void main()
 
     pointSize += 8.0 * t * t;
     float d = distance(posL, eyePos);
-    vertex.size = glViewportHeight/(1.0 + 8.0 * d);
+    vertex.size = 1.;//glViewportHeight/(1.0 + 8.0 * d);
 
-    vertex.color = vec4((1.0f - (t / lifeTime)));
+    vertex.color = color * vec4((1.0f - (t / lifeTime)));
 
     gl_Position = ModelViewMatrix * vec4(posL,1.0);
 }

@@ -10,9 +10,8 @@ class FireRing : public ParticleEmitter
 {
 public:
     FireRing();
-    ~FireRing() override;
-    void initParticle(Particle& out);
-    void initParticle(CParticle& out);
+    ~FireRing();
+    void initParticle(RealParticle& out);
 };
 
 }

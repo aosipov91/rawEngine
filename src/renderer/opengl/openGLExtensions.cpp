@@ -9,8 +9,11 @@ PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT = NULL;
 PFNGLACTIVETEXTUREPROC  glActiveTexture = NULL;
 PFNGLCOMPRESSEDTEXIMAGE2DPROC glCompressedTexImage2D = NULL;
 #endif
+
+PFNGLFLUSHMAPPEDBUFFERRANGEPROC glFlushMappedBufferRange = NULL;
 PFNGLMAPBUFFERPROC glMapBuffer = NULL;
 PFNGLUNMAPBUFFERPROC glUnmapBuffer = NULL;
+PFNGLMAPBUFFERRANGEPROC glMapBufferRange = NULL;
 
 PFNGLUNIFORM1IVPROC glUniform1iv = NULL;
 PFNGLUNIFORM4IVPROC glUniform4iv = NULL;
@@ -80,6 +83,8 @@ void init_opengl_extensions() {
         LOG("Version  : %s\n", glGetString(GL_VERSION));
 
 #if defined(__linux__)
+    glFlushMappedBufferRange = (PFNGLFLUSHMAPPEDBUFFERRANGEPROC)glXGetProcAddress((const GLubyte*)"glFlushMappedBufferRange");
+    glMapBufferRange = (PFNGLMAPBUFFERRANGEPROC)glXGetProcAddress((const GLubyte*)"glMapBufferRange");
     glMapBuffer = (PFNGLMAPBUFFERPROC)glXGetProcAddress((const GLubyte*)"glMapBuffer");
     glUnmapBuffer = (PFNGLUNMAPBUFFERPROC)glXGetProcAddress((const GLubyte*)"glUnmapBuffer");
 
@@ -146,6 +151,8 @@ void init_opengl_extensions() {
 #endif
 
 #if defined(_WIN32)
+    glFlushMappedBufferRange = (PFNGLFLUSHMAPPEDBUFFERRANGEPROC)wglGetProcAddress("glFlushMappedBufferRange");
+    glMapBufferRange = (PFNGLMAPBUFFERRANGEPROC)wglGetProcAddress("glMapBufferRange");
     glMapBuffer = (PFNGLMAPBUFFERPROC)wglGetProcAddress("glMapBuffer");
     glUnmapBuffer = (PFNGLUNMAPBUFFERPROC)wglGetProcAddress("glUnmapBuffer");
 
