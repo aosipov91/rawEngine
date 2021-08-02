@@ -83,22 +83,21 @@ namespace game {
             glBindVertexArray(vao);
             glGenBuffers(1, &vbo);
             glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
             glBufferData(GL_ARRAY_BUFFER, MAX_PARTICLES * sizeof(RealParticleFountain), nullptr, GL_STREAM_DRAW);
-            float *ptr = nullptr;
-            glVertexAttribPointer(POSITION_SLOT, 3, GL_FLOAT, GL_FALSE, sizeof(RealParticleFountain), (GLvoid*)vertex_position_offset);
-            glVertexAttribPointer(VELOCITY_SLOT, 3, GL_FLOAT, GL_FALSE, sizeof(RealParticleFountain), (GLvoid*)vertex_velocity_offset);
-            glVertexAttribPointer(SIZE_SLOT,     1, GL_FLOAT, GL_FALSE, sizeof(RealParticleFountain), (GLvoid*)vertex_size_offset);
-            glVertexAttribPointer(TIME_SLOT,     1, GL_FLOAT, GL_FALSE, sizeof(RealParticleFountain), (GLvoid*)vertex_time_offset);
-            glVertexAttribPointer(LIFE_SLOT,     1, GL_FLOAT, GL_FALSE, sizeof(RealParticleFountain), (GLvoid*)vertex_life_offset);
-            glVertexAttribPointer(COLOR_SLOT,    4, GL_FLOAT, GL_FALSE, sizeof(RealParticleFountain), (GLvoid*)vertex_color_offset);
-            //glVertexAttribPointer(MASS_SLOT, 1, GL_FLOAT, GL_FALSE, sizeof(RealParticle), (void*)(ptr+=1));
+            glVertexAttribPointer(POSITION_SLOT, 3, GL_FLOAT, GL_FALSE, sizeof(RealParticleFountain), (GLvoid*)0);
+            glVertexAttribPointer(VELOCITY_SLOT, 3, GL_FLOAT, GL_FALSE, sizeof(RealParticleFountain), (GLvoid*)12);
+            glVertexAttribPointer(SIZE_SLOT,     1, GL_FLOAT, GL_FALSE, sizeof(RealParticleFountain), (GLvoid*)24);
+            glVertexAttribPointer(TIME_SLOT,     1, GL_FLOAT, GL_FALSE, sizeof(RealParticleFountain), (GLvoid*)28);
+            glVertexAttribPointer(LIFE_SLOT,     1, GL_FLOAT, GL_FALSE, sizeof(RealParticleFountain), (GLvoid*)32);
+            glVertexAttribPointer(COLOR_SLOT,    4, GL_FLOAT, GL_FALSE, sizeof(RealParticleFountain), (GLvoid*)36);
             glEnableVertexAttribArray( POSITION_SLOT );
             glEnableVertexAttribArray( VELOCITY_SLOT );
             glEnableVertexAttribArray( SIZE_SLOT );
             glEnableVertexAttribArray( TIME_SLOT );
             glEnableVertexAttribArray( LIFE_SLOT );
             glEnableVertexAttribArray( COLOR_SLOT );
-            //glEnableVertexAttribArray( MASS_SLOT );
+
             glBindVertexArray(0);
         }
 
@@ -122,7 +121,6 @@ namespace game {
                 }
             }
 
-/*
             // A negative or zero mTimePerParticle value denotes
             // not to emit any particles.
             if( mTimePerParticle > 0.0f )
@@ -136,9 +134,9 @@ namespace game {
                     timeAccum -= mTimePerParticle;
                 }
             }
-*/
 // create new particles
 
+/*
             float emitRateThisFrame = math::RandomNumber(mMinEmitRate, mMaxEmitRate);
             int numNewParts = emitRateThisFrame * deltaTime;
             mNumNewPartsExcess += (float)(emitRateThisFrame * deltaTime) - numNewParts;
@@ -152,7 +150,7 @@ namespace game {
             {
                 addParticle();
             }
-
+*/
 
         }
 
@@ -171,11 +169,13 @@ namespace game {
             glBindTexture(GL_TEXTURE_2D, ptTexture);
             glBindVertexArray(vao);
 
+
             glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
             int numActiveParticles = 0;
             //float* pData = (float*)glFlushMappedBufferRange(GL_ARRAY_BUFFER, 0, mAliveParticles.size() * sizeof(RealParticleFountain));
             float* pData = (float*)glMapBufferRange(GL_ARRAY_BUFFER, 0, mAliveParticles.size() * sizeof(RealParticleFountain),  GL_MAP_WRITE_BIT  | GL_MAP_FLUSH_EXPLICIT_BIT );
-            glFlushMappedBufferRange(GL_ARRAY_BUFFER, 0, mAliveParticles.size() * sizeof(RealParticleFountain));
+            ///glFlushMappedBufferRange(GL_ARRAY_BUFFER, 0, mAliveParticles.size() * sizeof(RealParticleFountain));
             //memcpy(pData, mAliveParticles.data(), mAliveParticles.size() *sizeof(float)*13);
             for (int i = 0; i < mAliveParticles.size(); i++)
             {
@@ -195,7 +195,6 @@ namespace game {
                 numActiveParticles++;
                 
             }
-            pData = nullptr;
             glUnmapBuffer(GL_ARRAY_BUFFER);
 
             glDrawArrays(GL_POINTS, 0, mAliveParticles.size());

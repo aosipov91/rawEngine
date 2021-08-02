@@ -37,7 +37,7 @@ private:
     glm::mat4 model;
     game::particle::Fountain fE{glm::vec3(-10.0, 0.0, 0.0)};
     game::particle::Fountain AE{glm::vec3(0.0, 0.0, 0.0)};
-    game::particle::FireRing particleEmitter;
+    //game::particle::FireRing particleEmitter;
     game::particle::Fountain fountainEmitter{glm::vec3(10.0, 0.0, 0.0)};
 
     Camera camera{};
@@ -204,7 +204,7 @@ public:
         fE.render();
         AE.render();
         fountainEmitter.render();
-        particleEmitter.render();
+        //particleEmitter.render();
         glDisable(GL_BLEND);
 
     }
@@ -226,8 +226,8 @@ public:
 
 
 
-        particleEmitter.setWindowHeight((float)HEIGHT);
-        particleEmitter.createBuffer();
+        //particleEmitter.setWindowHeight((float)HEIGHT);
+        //particleEmitter.createBuffer();
     }
 
     void particleObjectUpdate(float deltaTime)
@@ -249,10 +249,10 @@ public:
         fountainEmitter.setView(camera.mView);
         fountainEmitter.setEyePos(camera.pos);
 
-        particleEmitter.update(deltaTime);
-        particleEmitter.setProj(camera.mProj);
-        particleEmitter.setView(camera.mView);
-        particleEmitter.setEyePos(camera.pos);
+        //particleEmitter.update(deltaTime);
+        //particleEmitter.setProj(camera.mProj);
+        //particleEmitter.setView(camera.mView);
+        //particleEmitter.setEyePos(camera.pos);
     }
 
 

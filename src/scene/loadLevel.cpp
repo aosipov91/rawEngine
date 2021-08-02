@@ -50,6 +50,11 @@ bool LoadLevelTextured(const char* filename)
 
         // it's actually num of element in array of vertices
 
+        // vertices layout [px, py, pz, nx, ny, nz, tx, ty]
+        // nVertices is capacity of array
+        /*
+        * v[0] = 
+        */
         stream_read(&stream, &entity->obj.nVertices, sizeof(entity->obj.nVertices)); // it's actuall num of elements in
         entity->obj.textured_vertices = (float*)calloc(entity->obj.nVertices, sizeof(float)); // Each vertex has three floats (x, y, z)
         stream_read(&stream, entity->obj.textured_vertices, entity->obj.nVertices * sizeof(float));
